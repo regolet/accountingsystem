@@ -9,7 +9,19 @@
       "Bash(npm run dev:*)",
       "Bash(git add:*)",
       "Bash(git init:*)",
-      "Bash(git remote add:*)"
+      "Bash(git remote add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npx prisma:*)",
+      "Bash(npm run:*)",
+      "Bash(taskkill:*)",
+      "Bash(where npm)",
+      "Bash(npx kill-port:*)",
+      "Bash(curl:*)",
+      "Bash(npx tsc:*)",
+      "Bash(cmd /c:*)",
+      "Bash(powershell:*)",
+      "Bash(npx next build:*)"
     ],
     "deny": []
   }
