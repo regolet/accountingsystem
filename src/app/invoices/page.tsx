@@ -226,7 +226,7 @@ export default function InvoicesPage() {
                     .filter(sub => !formData.customerId || sub.customerId === formData.customerId)
                     .map(subscription => (
                       <option key={subscription.id} value={subscription.id}>
-                        {subscription.name} - ${subscription.amount} ({subscription.billingType})
+                        {subscription.name} - ₱{subscription.amount} ({subscription.billingType})
                       </option>
                     ))}
                 </select>
