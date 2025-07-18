@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs'
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-build',
+  trustHost: true, // Required for Netlify
   providers: [
     CredentialsProvider({
       name: 'credentials',

@@ -10,3 +10,14 @@
 
 [functions]
   node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/auth/*"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+[[headers]]
+  for = "/api/auth/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
