@@ -4,7 +4,7 @@ import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-build',
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -17,39 +17,49 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
-          },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            password: true,
-            role: true,
-            customPermissions: true
+        // Skip database operations during build
+        if (!process.env.DATABASE_URL) {
+          return null
+        }
+
+        try {
+          const user = await prisma.user.findUnique({
+            where: {
+              email: credentials.email
+            },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              password: true,
+              role: true,
+              customPermissions: true
+            }
+          })
+
+          if (!user || !user.password) {
+            return null
           }
-        })
 
-        if (!user || !user.password) {
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          )
+
+          if (!isPasswordValid) {
+            return null
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name || '',
+            role: user.role,
+            customPermissions: user.customPermissions || undefined,
+          }
+        } catch (error) {
+          console.error('Auth error:', error)
           return null
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        )
-
-        if (!isPasswordValid) {
-          return null
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name || '',
-          role: user.role,
-          customPermissions: user.customPermissions || undefined,
         }
       }
     })
