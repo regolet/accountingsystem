@@ -14,12 +14,46 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [seedLoading, setSeedLoading] = useState(false)
   const router = useRouter()
+
+  const handleSeedDemo = async () => {
+    setSeedLoading(true)
+    setError('')
+    setSuccess('')
+    
+    try {
+      const response = await fetch('/api/seed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      if (response.ok) {
+        setError('')
+        // Auto-fill demo credentials
+        setEmail('admin@demo.com')
+        setPassword('password123')
+        setSuccess('Demo user created/verified! Credentials have been filled in. You can now sign in.')
+      } else {
+        const errorData = await response.json()
+        setError(`Failed to create demo user: ${errorData.error}`)
+      }
+    } catch (error) {
+      console.error('Seed error:', error)
+      setError('Failed to create demo user. Please try again.')
+    } finally {
+      setSeedLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setSuccess('')
 
     try {
       const result = await signIn('credentials', {
@@ -28,14 +62,25 @@ export default function SignInPage() {
         redirect: false,
       })
 
+      console.log('Sign in result:', result) // Debug log
+
       if (result?.error) {
-        setError('Invalid email or password')
-      } else {
+        // More specific error messages
+        if (result.error === 'CredentialsSignin') {
+          setError('Invalid email or password. Please check your credentials.')
+        } else {
+          setError(`Login failed: ${result.error}`)
+        }
+      } else if (result?.ok) {
+        // Success - redirect to dashboard
         router.push('/dashboard')
         router.refresh()
+      } else {
+        setError('Login failed. Please try again.')
       }
     } catch (error) {
-      setError('An error occurred. Please try again.')
+      console.error('Login error:', error)
+      setError('An error occurred. Please check your connection and try again.')
     } finally {
       setLoading(false)
     }
@@ -61,7 +106,31 @@ export default function SignInPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                  {error}
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm">{error}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {success && (
+                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm">{success}</p>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -134,10 +203,18 @@ export default function SignInPage() {
           </CardContent>
         </Card>
 
-        <div className="text-center">
+        <div className="text-center space-y-2">
           <p className="text-xs text-gray-500">
             Demo credentials: admin@demo.com / password123
           </p>
+          <Button
+            type="button"
+            onClick={handleSeedDemo}
+            disabled={seedLoading}
+            className="w-full bg-gray-600 hover:bg-gray-700 text-white text-sm"
+          >
+            {seedLoading ? 'Creating Demo User...' : 'Create/Verify Demo User'}
+          </Button>
         </div>
       </div>
     </div>
