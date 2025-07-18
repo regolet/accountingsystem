@@ -21,7 +21,9 @@
       "Bash(npx tsc:*)",
       "Bash(cmd /c:*)",
       "Bash(powershell:*)",
-      "Bash(npx next build:*)"
+      "Bash(npx next build:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(npm:*)"
     ],
     "deny": []
   }
