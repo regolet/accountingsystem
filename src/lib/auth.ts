@@ -3,8 +3,17 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 
+// Generate a fallback secret for build time only
+const buildTimeSecret = process.env.NODE_ENV === 'production' 
+  ? undefined 
+  : 'dev-secret-only-for-local-development'
+
+if (process.env.NODE_ENV === 'production' && !process.env.NEXTAUTH_SECRET) {
+  console.warn('⚠️  NEXTAUTH_SECRET is not set in production environment')
+}
+
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-build',
+  secret: process.env.NEXTAUTH_SECRET || buildTimeSecret,
   providers: [
     CredentialsProvider({
       name: 'credentials',
