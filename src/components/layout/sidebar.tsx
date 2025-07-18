@@ -9,7 +9,7 @@ import {
   FileText, 
   TrendingUp, 
   Settings, 
-  DollarSign,
+  Coins,
   Building2,
   LogOut,
   UserCircle
@@ -38,7 +38,7 @@ const navigation = [
   {
     name: 'Subscriptions',
     href: '/subscriptions' as const,
-    icon: DollarSign,
+    icon: Coins,
     permission: 'viewSubscriptions' as const,
   },
   {

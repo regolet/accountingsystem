@@ -9,7 +9,7 @@ import {
   ArrowLeft, 
   FileText, 
   User, 
-  DollarSign, 
+  Coins, 
   Edit, 
   Trash2, 
   Send, 
@@ -456,7 +456,7 @@ export default function InvoiceDetailsPage() {
                 }}
                 disabled={updating}
               >
-                <DollarSign className="h-4 w-4 mr-2" />
+                <Coins className="h-4 w-4 mr-2" />
                 Pay
               </Button>
             </RoleGuard>
@@ -850,7 +850,7 @@ export default function InvoiceDetailsPage() {
                         <>Processing...</>
                       ) : (
                         <>
-                          <DollarSign className="h-4 w-4 mr-2" />
+                          <Coins className="h-4 w-4 mr-2" />
                           Process Payment
                         </>
                       )}

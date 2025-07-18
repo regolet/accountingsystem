@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DollarSign, FileText, Users, TrendingUp } from 'lucide-react'
+import { Coins, FileText, Users, TrendingUp } from 'lucide-react'
 
 interface DashboardMetrics {
   totalRevenue: number
@@ -71,7 +71,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-gray-500" />
+            <Coins className="h-4 w-4 text-gray-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(metrics.totalRevenue)}</div>

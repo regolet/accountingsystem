@@ -3,12 +3,7 @@ const nextConfig = {
   // Ensure proper trailing slashes
   trailingSlash: false,
   
-  // Image optimization for Netlify
-  images: {
-    unoptimized: true,
-  },
-  
-  // Enable experimental features for Netlify
+  // External packages for server components
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client'],
   },

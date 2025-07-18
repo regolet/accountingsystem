@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RoleGuard } from '@/components/ui/role-guard'
-import { Plus, Search, Calendar, DollarSign, Users, Play, Pause, X } from 'lucide-react'
+import { Plus, Search, Calendar, Coins, Users, Play, Pause, X } from 'lucide-react'
 
 interface Subscription {
   id: string
@@ -227,7 +227,7 @@ export default function SubscriptionsPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <DollarSign className="h-8 w-8 text-green-600" />
+              <Coins className="h-8 w-8 text-green-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Monthly Recurring</p>
                 <p className="text-2xl font-bold">
@@ -266,7 +266,7 @@ export default function SubscriptionsPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <DollarSign className="h-8 w-8 text-orange-600" />
+              <Coins className="h-8 w-8 text-orange-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Billed</p>
                 <p className="text-2xl font-bold">
@@ -457,7 +457,7 @@ export default function SubscriptionsPage() {
                     <p className="text-sm text-gray-600 mb-2">{subscription.customer.name}</p>
                     <div className="flex items-center gap-6 text-sm text-gray-500">
                       <span className="flex items-center gap-1">
-                        <DollarSign className="h-4 w-4" />
+                        <Coins className="h-4 w-4" />
                         {formatCurrency(subscription.amount, subscription.currency)} / {formatInterval(subscription.billingInterval, subscription.intervalType)}
                       </span>
                       <span className="flex items-center gap-1">

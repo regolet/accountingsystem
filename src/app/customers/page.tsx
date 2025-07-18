@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RoleGuard } from '@/components/ui/role-guard'
-import { Plus, Search, Mail, Phone, Edit, Trash2, Eye, MapPin, FileText, DollarSign } from 'lucide-react'
+import { Plus, Search, Mail, Phone, Edit, Trash2, Eye, MapPin, FileText, Coins } from 'lucide-react'
 
 interface Address {
   street: string
@@ -785,7 +785,7 @@ export default function CustomersPage() {
                 {activeTab === 'payments' && (
                   <div>
                     <h3 className="text-lg font-semibold mb-2 flex items-center">
-                      <DollarSign className="h-5 w-5 mr-2" />
+                      <Coins className="h-5 w-5 mr-2" />
                       Payment History
                     </h3>
                     {loadingHistory ? (

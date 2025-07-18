@@ -3,7 +3,7 @@ import { authOptions } from '@/lib/auth'
 
 const handler = NextAuth({
   ...authOptions,
-  // Override for Netlify compatibility
+  // Override for serverless compatibility
   callbacks: {
     ...authOptions.callbacks,
     async redirect({ url, baseUrl }) {
