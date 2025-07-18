@@ -12,7 +12,7 @@
   node_bundler = "esbuild"
 
 [[redirects]]
-  from = "/api/auth/*"
+  from = "/api/*"
   to = "/.netlify/functions/___netlify-handler"
   status = 200
 
