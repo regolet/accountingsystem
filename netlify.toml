@@ -3,19 +3,11 @@
   publish = ".next"
 
 [build.environment]
-  NPM_FLAGS = "--version"
   NODE_VERSION = "18"
+  PRISMA_CLI_BINARY_TARGETS = "native,rhel-openssl-1.0.x"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
 [functions]
   node_bundler = "esbuild"
-
-# Skip build cache for Prisma
-[build.processing]
-  skip_processing = false
-
-# Essential for Prisma on Netlify
-[build.environment]
-  PRISMA_CLI_BINARY_TARGETS = "native,rhel-openssl-1.0.x"
