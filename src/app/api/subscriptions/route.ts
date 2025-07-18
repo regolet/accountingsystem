@@ -26,10 +26,10 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const where: any = {}
+    const where: Prisma.SubscriptionWhereInput = {}
     if (customerId) where.customerId = customerId
-    if (status) where.status = status
-    if (billingType) where.billingType = billingType
+    if (status) where.status = status as Prisma.SubscriptionWhereInput['status']
+    if (billingType) where.billingType = billingType as Prisma.SubscriptionWhereInput['billingType']
 
     const [subscriptions, total] = await Promise.all([
       prisma.subscription.findMany({

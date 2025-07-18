@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, FileText, DollarSign, Calendar, Search } from 'lucide-react'
+import { Plus, FileText, Calendar, Search } from 'lucide-react'
 
 interface Invoice {
   id: string
@@ -57,6 +57,7 @@ export default function InvoicesPage() {
     fetchInvoices()
     fetchCustomers()
     fetchSubscriptions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, statusFilter])
 
   const fetchInvoices = async () => {
@@ -89,7 +90,7 @@ export default function InvoicesPage() {
     try {
       const response = await fetch('/api/subscriptions')
       const data = await response.json()
-      setSubscriptions(data.subscriptions.filter((s: any) => s.status === 'ACTIVE'))
+      setSubscriptions(data.subscriptions.filter((s: Subscription & { status: string }) => s.status === 'ACTIVE'))
     } catch (error) {
       console.error('Error fetching subscriptions:', error)
     }
@@ -121,7 +122,7 @@ export default function InvoicesPage() {
     setInvoiceItems(invoiceItems.filter((_, i) => i !== index))
   }
 
-  const handleItemChange = (index: number, field: string, value: any) => {
+  const handleItemChange = (index: number, field: string, value: string | number) => {
     const updatedItems = [...invoiceItems]
     updatedItems[index] = { ...updatedItems[index], [field]: value }
     setInvoiceItems(updatedItems)

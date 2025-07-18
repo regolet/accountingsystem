@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const where: any = {}
-    if (type) where.type = type
+    const where: Prisma.TransactionWhereInput = {}
+    if (type) where.type = type as Prisma.TransactionWhereInput['type']
 
     // If customerId is provided, find transactions related to that customer's invoices
     if (customerId) {

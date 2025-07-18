@@ -45,11 +45,11 @@ export default function SubscriptionsPage() {
     name: '',
     description: '',
     customerId: '',
-    billingType: 'RETAINER' as const,
+    billingType: 'RETAINER' as 'RETAINER' | 'RECURRING_SERVICE' | 'SUBSCRIPTION' | 'MAINTENANCE',
     amount: '',
     currency: 'PHP',
     billingInterval: '1',
-    intervalType: 'MONTHS' as const,
+    intervalType: 'MONTHS' as 'DAYS' | 'WEEKS' | 'MONTHS' | 'YEARS',
     startDate: '',
     endDate: '',
     notes: '',
@@ -58,6 +58,7 @@ export default function SubscriptionsPage() {
   useEffect(() => {
     fetchSubscriptions()
     fetchCustomers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, statusFilter])
 
   const fetchSubscriptions = async () => {
@@ -345,7 +346,7 @@ export default function SubscriptionsPage() {
                   <select
                     className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     value={formData.billingType}
-                    onChange={(e) => setFormData({ ...formData, billingType: e.target.value as any })}
+                    onChange={(e) => setFormData({ ...formData, billingType: e.target.value as 'RETAINER' | 'RECURRING_SERVICE' | 'SUBSCRIPTION' | 'MAINTENANCE' })}
                   >
                     <option value="RETAINER">Retainer</option>
                     <option value="RECURRING_SERVICE">Recurring Service</option>
@@ -390,7 +391,7 @@ export default function SubscriptionsPage() {
                     <select
                       className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       value={formData.intervalType}
-                      onChange={(e) => setFormData({ ...formData, intervalType: e.target.value as any })}
+                      onChange={(e) => setFormData({ ...formData, intervalType: e.target.value as 'DAYS' | 'WEEKS' | 'MONTHS' | 'YEARS' })}
                     >
                       <option value="DAYS">Days</option>
                       <option value="WEEKS">Weeks</option>

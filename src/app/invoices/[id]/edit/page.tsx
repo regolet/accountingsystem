@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { RoleGuard } from '@/components/ui/role-guard'
 import { ArrowLeft, Save, X, Plus } from 'lucide-react'
 
 interface InvoiceItem {
@@ -59,6 +58,7 @@ export default function EditInvoicePage() {
   useEffect(() => {
     fetchInvoice()
     fetchCustomers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id])
 
   const fetchInvoice = async () => {
@@ -105,7 +105,7 @@ export default function EditInvoicePage() {
     setInvoiceItems(invoiceItems.filter((_, i) => i !== index))
   }
 
-  const handleItemChange = (index: number, field: string, value: any) => {
+  const handleItemChange = (index: number, field: string, value: string | number) => {
     const updatedItems = [...invoiceItems]
     updatedItems[index] = { ...updatedItems[index], [field]: value }
     setInvoiceItems(updatedItems)

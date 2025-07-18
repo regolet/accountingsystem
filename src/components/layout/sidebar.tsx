@@ -12,7 +12,6 @@ import {
   DollarSign,
   Building2,
   LogOut,
-  User,
   UserCircle
 } from 'lucide-react'
 import { hasGranularPermission } from '@/lib/permissions'

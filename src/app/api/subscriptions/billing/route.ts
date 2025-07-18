@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Find all subscriptions that are due for billing
     const today = new Date()

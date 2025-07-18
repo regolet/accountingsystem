@@ -65,8 +65,8 @@ export async function PUT(
       // Full invoice update
       await prisma.$transaction(async (tx) => {
         // Update invoice basic info
-        const updateData: any = {}
-        if (validatedData.customerId) updateData.customerId = validatedData.customerId
+        const updateData: Prisma.InvoiceUpdateInput = {}
+        if (validatedData.customerId) updateData.customer = { connect: { id: validatedData.customerId } }
         if (validatedData.dueDate) updateData.dueDate = new Date(validatedData.dueDate)
         if (validatedData.tax !== undefined) updateData.tax = new Prisma.Decimal(validatedData.tax)
         if (validatedData.notes !== undefined) updateData.notes = validatedData.notes

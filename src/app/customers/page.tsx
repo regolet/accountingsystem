@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RoleGuard } from '@/components/ui/role-guard'
-import { Plus, Search, Mail, Phone, Edit, Trash2, Eye, MapPin, FileText, DollarSign, Calendar } from 'lucide-react'
+import { Plus, Search, Mail, Phone, Edit, Trash2, Eye, MapPin, FileText, DollarSign } from 'lucide-react'
 
 interface Address {
   street: string
@@ -87,6 +87,7 @@ export default function CustomersPage() {
 
   useEffect(() => {
     fetchCustomers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm])
 
   const formatAddress = (address: Address) => {

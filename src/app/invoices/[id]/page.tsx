@@ -8,7 +8,6 @@ import { RoleGuard } from '@/components/ui/role-guard'
 import { 
   ArrowLeft, 
   FileText, 
-  Calendar, 
   User, 
   DollarSign, 
   Edit, 
@@ -76,7 +75,13 @@ export default function InvoiceDetailsPage() {
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
-  const [companyInfo, setCompanyInfo] = useState<any>(null)
+  const [companyInfo, setCompanyInfo] = useState<{
+    companyName: string;
+    email: string;
+    phone?: string;
+    address?: string;
+    taxId?: string;
+  } | null>(null)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentDescription, setPaymentDescription] = useState('')
@@ -87,6 +92,7 @@ export default function InvoiceDetailsPage() {
       fetchInvoice()
       fetchCompanyInfo()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id])
 
   const fetchInvoice = async () => {
@@ -548,7 +554,7 @@ export default function InvoiceDetailsPage() {
             </tr>
           </thead>
           <tbody>
-            {invoice.items.map((item: any) => (
+            {invoice.items.map((item) => (
               <tr key={item.id}>
                 <td>{item.description}</td>
                 <td className="text-right">{item.quantity}</td>

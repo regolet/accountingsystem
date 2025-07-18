@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export async function GET(
   request: NextRequest,
@@ -74,15 +75,46 @@ export async function GET(
   }
 }
 
-function generateInvoiceHTML(invoice: any, settings: any) {
-  const formatCurrency = (amount: string) => {
+interface InvoiceWithRelations {
+  id: string;
+  invoiceNumber: string;
+  issueDate: Date;
+  dueDate: Date;
+  status: string;
+  subtotal: Prisma.Decimal;
+  tax: Prisma.Decimal;
+  total: Prisma.Decimal;
+  notes: string | null;
+  customer: {
+    name: string;
+    email: string;
+    phone: string | null;
+  };
+  items: Array<{
+    description: string;
+    quantity: number;
+    unitPrice: Prisma.Decimal;
+    total: Prisma.Decimal;
+  }>;
+}
+
+interface Settings {
+  companyName: string;
+  companyEmail: string;
+  companyPhone: string | null;
+  companyAddress: string | null;
+  companyTaxId: string | null;
+}
+
+function generateInvoiceHTML(invoice: InvoiceWithRelations, settings: Settings | null) {
+  const formatCurrency = (amount: string | Prisma.Decimal) => {
     return new Intl.NumberFormat('en-PH', {
       style: 'currency',
       currency: 'PHP',
-    }).format(parseFloat(amount))
+    }).format(parseFloat(amount.toString()))
   }
 
-  const formatDate = (date: string) => {
+  const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString()
   }
 
@@ -121,7 +153,7 @@ function generateInvoiceHTML(invoice: any, settings: any) {
         </tr>
       </thead>
       <tbody>
-        ${invoice.items.map((item: any) => `
+        ${invoice.items.map((item) => `
           <tr>
             <td>${item.description}</td>
             <td>${item.quantity}</td>

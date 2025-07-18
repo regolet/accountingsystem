@@ -1,11 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Building2, CreditCard, Users, Bell, Shield, Globe, User } from 'lucide-react'
+import { Building2, CreditCard, Bell, Shield } from 'lucide-react'
 import { RoleGuard } from '@/components/ui/role-guard'
 
 interface Settings {
@@ -25,7 +23,6 @@ interface Settings {
 }
 
 export default function SettingsPage() {
-  const { data: session } = useSession()
   const [settings, setSettings] = useState<Settings | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
@@ -46,7 +43,7 @@ export default function SettingsPage() {
     }
   }
 
-  const updateSettings = async (type: string, data: any) => {
+  const updateSettings = async (type: string, data: Record<string, string | number>) => {
     setSaving(type)
     try {
       const response = await fetch('/api/settings', {
@@ -102,7 +99,7 @@ export default function SettingsPage() {
       <div className="p-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-          <p className="text-gray-600">You don't have permission to view settings.</p>
+          <p className="text-gray-600">You don&apos;t have permission to view settings.</p>
         </div>
       </div>
     }>

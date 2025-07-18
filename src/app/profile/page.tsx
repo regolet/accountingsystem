@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { User, Mail, Shield, Save } from 'lucide-react'
+import { User, Shield, Save } from 'lucide-react'
 
 export default function ProfilePage() {
   const { data: session, update: updateSession } = useSession()

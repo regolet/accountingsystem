@@ -258,6 +258,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<Role, (keyof typeof permissions)[]
 }
 
 export function hasPermission(userRole: Role, permission: keyof typeof permissions): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return permissions[permission].includes(userRole as any)
 }
 

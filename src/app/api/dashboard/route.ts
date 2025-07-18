@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getDashboardMetrics } from '@/lib/db-utils'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Check if DATABASE_URL is available (skip during build if not)
     if (!process.env.DATABASE_URL) {

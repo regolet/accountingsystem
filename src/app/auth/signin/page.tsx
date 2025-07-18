@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn, getSession } from 'next-auth/react'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Building2, Eye, EyeOff } from 'lucide-react'
 
 export default function SignInPage() {
@@ -124,7 +124,7 @@ export default function SignInPage() {
 
               <div className="text-center">
                 <p className="text-sm text-gray-600">
-                  Don't have an account?{' '}
+                  Don&apos;t have an account?{' '}
                   <Link href="/auth/signup" className="font-medium text-primary-600 hover:text-primary-500">
                     Sign up here
                   </Link>

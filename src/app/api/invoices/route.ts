@@ -26,8 +26,8 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const where: any = {}
-    if (status) where.status = status
+    const where: Prisma.InvoiceWhereInput = {}
+    if (status) where.status = status as Prisma.InvoiceWhereInput['status']
     if (customerId) where.customerId = customerId
     
     // Add search functionality

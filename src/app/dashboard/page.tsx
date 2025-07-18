@@ -11,7 +11,13 @@ interface DashboardMetrics {
   outstandingInvoices: number
   overdueInvoices: number
   customerCount: number
-  recentTransactions: any[]
+  recentTransactions: Array<{
+    id: string;
+    description: string;
+    date: string;
+    type: 'INCOME' | 'EXPENSE';
+    amount: string;
+  }>
 }
 
 export default function DashboardPage() {

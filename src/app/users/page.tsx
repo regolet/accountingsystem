@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Users, Edit, Trash2, Plus, Shield, Mail, User, Settings, Check, X } from 'lucide-react'
-import { PERMISSION_GROUPS, DEFAULT_ROLE_PERMISSIONS, permissions } from '@/lib/permissions'
+import { PERMISSION_GROUPS, DEFAULT_ROLE_PERMISSIONS } from '@/lib/permissions'
 
 interface UserData {
   id: string
@@ -280,7 +280,7 @@ export default function UsersPage() {
                   <select
                     className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value as 'ADMIN' | 'ACCOUNTANT' | 'VIEWER' })}
                   >
                     <option value="VIEWER">Viewer</option>
                     <option value="ACCOUNTANT">Accountant</option>
@@ -343,7 +343,7 @@ export default function UsersPage() {
                   <select
                     className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value as 'ADMIN' | 'ACCOUNTANT' | 'VIEWER' })}
                   >
                     <option value="VIEWER">Viewer</option>
                     <option value="ACCOUNTANT">Accountant</option>
