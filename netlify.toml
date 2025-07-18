@@ -16,6 +16,11 @@
   to = "/.netlify/functions/___netlify-handler"
   status = 200
 
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
 [[headers]]
   for = "/api/auth/*"
   [headers.values]
