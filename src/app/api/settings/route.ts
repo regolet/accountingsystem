@@ -20,6 +20,25 @@ const invoiceSettingsSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
+    // Check if DATABASE_URL is available (skip during build if not)
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({
+        companyInfo: {
+          companyName: 'Your Company Name',
+          taxId: '',
+          email: 'admin@company.com',
+          phone: '',
+          address: '',
+        },
+        invoiceSettings: {
+          defaultPaymentTerms: 'Net 30',
+          defaultCurrency: 'PHP',
+          taxRate: 12.0,
+          invoicePrefix: 'INV-',
+        }
+      })
+    }
+
     // Try to get existing settings, or create default ones
     let settings = await prisma.settings.findFirst()
     
@@ -66,6 +85,14 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    // Check if DATABASE_URL is available (skip during build if not)
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json(
+        { error: 'Database not available during build' },
+        { status: 503 }
+      )
+    }
+
     const body = await request.json()
     const { type, data } = body
 

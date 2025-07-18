@@ -3,6 +3,18 @@ import { getDashboardMetrics } from '@/lib/db-utils'
 
 export async function GET(request: NextRequest) {
   try {
+    // Check if DATABASE_URL is available (skip during build if not)
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({
+        totalRevenue: 0,
+        totalExpenses: 0,
+        totalCustomers: 0,
+        totalInvoices: 0,
+        recentTransactions: [],
+        monthlyRevenue: [],
+      })
+    }
+
     const metrics = await getDashboardMetrics()
     return NextResponse.json(metrics)
   } catch (error) {
