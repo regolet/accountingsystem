@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { PayrollStatus } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     const where: {
       employeeId?: string;
-      status?: string;
+      status?: PayrollStatus;
       payPeriodStart?: {
         gte?: Date;
         lte?: Date;
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
     
     if (status) {
-      where.status = status
+      where.status = status as PayrollStatus
     }
     
     if (startDate && endDate) {

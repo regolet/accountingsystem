@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Download, Mail, Building2, User, Calendar, DollarSign, Calculator } from 'lucide-react'
+import { X, Download, Building2, User, Calendar, DollarSign, Calculator } from 'lucide-react'
 
 interface PayslipData {
   employee: {

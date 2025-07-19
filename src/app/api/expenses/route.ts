@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     const where: {
       category?: string;
-      status?: string;
+      status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAID';
       date?: {
         gte?: Date;
         lte?: Date;
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (status) {
-      where.status = status
+      where.status = status as 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAID'
     }
 
     if (startDate && endDate) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { AttendanceStatus } from '@prisma/client'
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
       location?: string;
       ipAddress?: string | null;
       clockIn?: Date;
-      status?: string;
+      status?: AttendanceStatus;
       clockOut?: Date;
       totalHours?: number;
       regularHours?: number;
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
           )
         }
         updateData.clockIn = now
-        updateData.status = 'PRESENT'
+        updateData.status = AttendanceStatus.PRESENT
         break
 
       case 'clock_out':

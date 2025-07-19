@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Clock, User, MapPin } from 'lucide-react'
+import { Clock, MapPin } from 'lucide-react'
 
 interface Employee {
   id: string
@@ -339,7 +339,7 @@ export default function ClockWidget({
         {selectedEmployee && todayAttendance && (
           <Card className="bg-gray-50">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Today's Activity</CardTitle>
+              <CardTitle className="text-lg">Today&apos;s Activity</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

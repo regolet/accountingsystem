@@ -33,17 +33,17 @@ export async function POST(request: NextRequest) {
     const customers = await prisma.customer.findMany({
       where: {
         ...customerFilter,
-        email: { not: null },
+        email: { not: undefined },
         invoices: {
           some: {
-            status: { in: ['PENDING', 'OVERDUE'] }
+            status: { in: ['SENT', 'OVERDUE'] }
           }
         }
       },
       include: {
         invoices: {
           where: {
-            status: { in: ['PENDING', 'OVERDUE'] }
+            status: { in: ['SENT', 'OVERDUE'] }
           },
           orderBy: { dueDate: 'asc' }
         }
@@ -94,13 +94,13 @@ export async function POST(request: NextRequest) {
 
       // Calculate total outstanding balance
       const totalAmount = relevantInvoices.reduce((sum, inv) => 
-        sum + parseFloat(inv.total), 0
+        sum + parseFloat(inv.total.toString()), 0
       )
 
       // Prepare invoice data for email template
       const invoiceData = relevantInvoices.map(inv => ({
         invoiceNumber: inv.invoiceNumber,
-        amount: formatCurrency(inv.total, inv.currency),
+        amount: formatCurrency(inv.total.toString(), inv.currency),
         dueDate: new Date(inv.dueDate).toLocaleDateString(),
         daysOverdue: calculateDaysOverdue(inv.dueDate)
       }))

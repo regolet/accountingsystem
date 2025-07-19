@@ -45,7 +45,7 @@ export function calculateAttendanceHours(
   
   // Calculate regular and overtime hours
   let regularHours = Math.min(totalHours, schedule.regularHoursPerDay)
-  let overtimeHours = Math.max(0, totalHours - schedule.regularHoursPerDay)
+  const overtimeHours = Math.max(0, totalHours - schedule.regularHoursPerDay)
   
   // Ensure we don't have negative regular hours
   regularHours = Math.max(0, regularHours)
@@ -231,7 +231,7 @@ export interface AttendanceSummary {
   attendanceRate: number
 }
 
-export function calculateAttendanceSummary(attendanceRecords: any[]): AttendanceSummary {
+export function calculateAttendanceSummary(attendanceRecords: { status: string; totalHours?: number }[]): AttendanceSummary {
   const totalDays = attendanceRecords.length
   const presentDays = attendanceRecords.filter(r => ['PRESENT', 'LATE'].includes(r.status)).length
   const absentDays = attendanceRecords.filter(r => r.status === 'ABSENT').length

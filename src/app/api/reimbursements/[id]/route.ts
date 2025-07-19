@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { requireGranularPermission } from '@/lib/permissions'
+import { ReimbursementStatus } from '@prisma/client'
 
 export async function GET(
   request: NextRequest,
@@ -100,7 +101,7 @@ export async function PUT(
       title?: string;
       description?: string;
       dueDate?: Date | null;
-      status?: string;
+      status?: ReimbursementStatus;
       approvedBy?: string;
       subtotal?: number;
       total?: number;
@@ -122,7 +123,7 @@ export async function PUT(
     if (description !== undefined) updateData.description = description
     if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null
     if (status !== undefined) {
-      updateData.status = status
+      updateData.status = status as ReimbursementStatus
       // Set approvedBy when status changes to APPROVED
       if (status === 'APPROVED') {
         updateData.approvedBy = session.user.id
@@ -133,7 +134,7 @@ export async function PUT(
     if (items !== undefined) {
       // Calculate new totals
       const subtotal = items.reduce((sum: number, item: { amount: string | number }) => sum + parseFloat(String(item.amount)), 0)
-      const taxAmount = tax !== undefined ? parseFloat(tax) : existingReimbursement.tax
+      const taxAmount = tax !== undefined ? parseFloat(tax) : Number(existingReimbursement.tax)
       const total = subtotal + taxAmount
 
       updateData.subtotal = subtotal
@@ -157,7 +158,7 @@ export async function PUT(
         }) => ({
           expenseId: item.expenseId || null,
           description: item.description,
-          amount: parseFloat(item.amount),
+          amount: parseFloat(String(item.amount)),
           date: new Date(item.date),
           category: item.category,
           receipt: item.receipt || null,

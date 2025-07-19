@@ -84,15 +84,15 @@ export async function POST(
     const companyName = settings?.companyName || process.env.COMPANY_NAME || 'AccountingPro'
 
     // Generate PDF attachment
-    let attachments = []
+    const attachments: { filename: string; content: Buffer; contentType: string }[] = []
     
     try {
       const pdfBuffer = await generateReimbursementPDF(reimbursement.id)
-      attachments = [{
+      attachments.push({
         filename: `reimbursement-${reimbursement.reimbursementNumber}.pdf`,
         content: pdfBuffer,
         contentType: 'application/pdf'
-      }]
+      })
     } catch (pdfError) {
       console.error('Failed to generate PDF attachment:', pdfError)
       // Continue without PDF attachment if generation fails
@@ -102,7 +102,7 @@ export async function POST(
     const emailContent = await generateReimbursementEmailFromTemplate(
       reimbursement.customer.name,
       reimbursement.reimbursementNumber,
-      formatCurrency(reimbursement.total),
+      formatCurrency(Number(reimbursement.total)),
       reimbursement.dueDate ? new Date(reimbursement.dueDate).toLocaleDateString() : '',
       companyName
     )

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Decimal } from '@prisma/client/runtime/library'
 
 export async function GET(
   request: NextRequest,
@@ -77,16 +78,16 @@ export async function PUT(
         workingMinutes -= breakMinutes
       }
 
-      totalHours = workingMinutes / 60
+      totalHours = new Decimal(workingMinutes / 60)
 
       // Calculate regular and overtime hours (assuming 8 hours is regular)
       const regularWorkHours = 8
-      if (totalHours <= regularWorkHours) {
+      if (totalHours.lessThanOrEqualTo(regularWorkHours)) {
         regularHours = totalHours
-        overtimeHours = 0
+        overtimeHours = new Decimal(0)
       } else {
-        regularHours = regularWorkHours
-        overtimeHours = totalHours - regularWorkHours
+        regularHours = new Decimal(regularWorkHours)
+        overtimeHours = totalHours.minus(regularWorkHours)
       }
     }
 

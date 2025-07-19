@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RoleGuard } from '@/components/ui/role-guard'
-import { Plus, Search, Edit, Trash2, Eye, Calendar } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Eye, Calendar, Download } from 'lucide-react'
 
 interface Expense {
   id: string
@@ -82,7 +82,7 @@ export default function ExpensesPage() {
     paymentMethod: '',
     vendor: '',
     receipt: '',
-    status: 'PENDING' as const
+    status: 'PENDING' as 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAID'
   })
 
   useEffect(() => {

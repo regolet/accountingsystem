@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RoleGuard } from '@/components/ui/role-guard'
 import ClockWidget from '@/components/attendance/clock-widget'
-import { Plus, Search, Clock, Calendar, Filter, Download, Eye, Edit, Trash2, Clock3, Clock4 } from 'lucide-react'
+import { Plus, Clock, Filter, Edit, Trash2 } from 'lucide-react'
 
 interface Employee {
   id: string
@@ -277,7 +277,7 @@ export default function AttendancePage() {
         <h1 className="text-3xl font-bold">Attendance Management</h1>
         <div className="flex gap-2">
           <RoleGuard permission="clockInOut">
-            <Button variant="outline" onClick={() => setShowClockModal(true)}>
+            <Button variant="secondary" onClick={() => setShowClockModal(true)}>
               <Clock className="h-4 w-4 mr-2" />
               Clock In/Out
             </Button>
@@ -348,7 +348,7 @@ export default function AttendancePage() {
               />
             </div>
             <div className="flex items-end">
-              <Button variant="outline" onClick={resetFilters}>
+              <Button variant="secondary" onClick={resetFilters}>
                 Clear Filters
               </Button>
             </div>
@@ -412,7 +412,7 @@ export default function AttendancePage() {
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
                         <div>
                           <div>{formatHours(attendance.totalHours)}</div>
-                          {attendance.overtimeHours && attendance.overtimeHours > 0 && (
+                          {attendance.overtimeHours && Number(attendance.overtimeHours) > 0 && (
                             <div className="text-xs text-orange-600">
                               OT: {formatHours(attendance.overtimeHours)}
                             </div>
@@ -465,7 +465,7 @@ export default function AttendancePage() {
               </div>
               <div className="flex gap-2">
                 <Button 
-                  variant="outline" 
+                  variant="secondary" 
                   size="sm" 
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -473,7 +473,7 @@ export default function AttendancePage() {
                   Previous
                 </Button>
                 <Button 
-                  variant="outline" 
+                  variant="secondary" 
                   size="sm" 
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}

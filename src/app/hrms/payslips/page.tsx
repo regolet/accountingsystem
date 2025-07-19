@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search, Filter, Calendar, Receipt, Download, Users, Eye } from 'lucide-react'
+import { Search, Filter, Calendar, Receipt, Download, Users } from 'lucide-react'
 import { RoleGuard } from '@/components/ui/role-guard'
 import { PayslipViewer } from '@/components/ui/payslip-viewer'
 

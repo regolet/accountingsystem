@@ -76,7 +76,7 @@ export async function POST(
     }
 
     // Generate PDF attachment
-    let attachments = []
+    let attachments: { filename: string; content: Buffer; contentType: string }[] = []
     
     try {
       const pdfBuffer = await generateInvoicePDF(invoice.id)
@@ -98,7 +98,7 @@ export async function POST(
     const emailContent = await generateInvoiceEmailFromTemplate(
       invoice.customer.name,
       invoice.invoiceNumber,
-      formatCurrency(invoice.total),
+      formatCurrency(parseFloat(invoice.total.toString())),
       new Date(invoice.dueDate).toLocaleDateString(),
       companyName
     )

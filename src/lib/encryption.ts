@@ -30,7 +30,6 @@ export function decrypt(encryptedText: string): string {
       return encryptedText
     }
     
-    const iv = Buffer.from(parts[0], 'hex')
     const encrypted = parts[1]
     
     const decipher = crypto.createDecipher(ALGORITHM, ENCRYPTION_KEY)

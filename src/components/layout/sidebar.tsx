@@ -19,11 +19,8 @@ import {
   ChevronDown,
   ChevronRight,
   Clock,
-  UserCheck,
   DollarSign,
   BarChart3,
-  Minus,
-  Plus,
   TrendingDown,
   Receipt
 } from 'lucide-react'
@@ -211,10 +208,10 @@ export function Sidebar() {
     ? [...filteredNavigation, { name: 'Users', href: '/users' as const, icon: Users, permission: 'viewUsers' as const }]
     : filteredNavigation
 
-  const renderNavItem = (item: any) => {
+  const renderNavItem = (item: typeof navigation[0]) => {
     if (item.type === 'group') {
       const isExpanded = expandedGroups.includes(item.name)
-      const hasActiveChild = item.children?.some((child: any) => pathname === child.href)
+      const hasActiveChild = item.type === 'group' && item.children?.some((child) => pathname === child.href)
       
       return (
         <div key={item.name}>
@@ -238,7 +235,7 @@ export function Sidebar() {
           </button>
           {isExpanded && (
             <div className="ml-4 mt-1 space-y-1">
-              {item.children?.map((child: any) => {
+              {item.type === 'group' && item.children?.map((child) => {
                 const isActive = pathname === child.href
                 return (
                   <Link

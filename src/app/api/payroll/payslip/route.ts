@@ -60,9 +60,9 @@ export async function POST(request: NextRequest) {
     const settings = await prisma.settings.findFirst()
     const companyInfo = settings ? {
       name: settings.companyName || 'Company Name',
-      address: settings.address || '',
-      phone: settings.phone || '',
-      email: settings.email || ''
+      address: settings.companyAddress || '',
+      phone: settings.companyPhone || '',
+      email: settings.companyEmail || ''
     } : null
 
     // Format payslip data
@@ -106,10 +106,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ payslips })
   } catch (error) {
     console.error('Error generating payslips:', error)
-    console.error('Error details:', error.message)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Error details:', errorMessage)
     return NextResponse.json({ 
       error: 'Internal server error', 
-      details: error.message 
+      details: errorMessage 
     }, { status: 500 })
   }
 }

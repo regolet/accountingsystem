@@ -11,12 +11,9 @@ import {
   Building2,
   LogOut,
   Coins,
-  Briefcase,
   Clock,
   DollarSign,
   BarChart3,
-  Minus,
-  Plus,
 } from 'lucide-react'
 
 const navigation = [

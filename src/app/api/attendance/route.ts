@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { AttendanceStatus } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
         gte?: Date;
         lte?: Date;
       };
-      status?: string;
+      status?: AttendanceStatus;
     } = {}
     
     if (employeeId) {
@@ -39,8 +40,8 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    if (status) {
-      where.status = status
+    if (status && Object.values(AttendanceStatus).includes(status as AttendanceStatus)) {
+      where.status = status as AttendanceStatus
     }
 
     const [attendances, total] = await Promise.all([

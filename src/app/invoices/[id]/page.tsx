@@ -87,7 +87,6 @@ export default function InvoiceDetailsPage() {
   const [paymentDescription, setPaymentDescription] = useState('')
   const [processingPayment, setProcessingPayment] = useState(false)
   const [sendingEmail, setSendingEmail] = useState(false)
-  const [emailSent, setEmailSent] = useState(false)
 
   useEffect(() => {
     if (params.id) {
@@ -209,7 +208,6 @@ export default function InvoiceDetailsPage() {
       
       if (response.ok) {
         const result = await response.json()
-        setEmailSent(true)
         alert(`Invoice email sent successfully to ${result.recipient}`)
         
         // Also update status to SENT if not already

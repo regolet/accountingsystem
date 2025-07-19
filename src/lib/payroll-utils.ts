@@ -222,14 +222,12 @@ export function calculatePayroll(
   const existingPhilHealth = deductionsBreakdown.find(d => d.type.toLowerCase().includes('philhealth'))
   const existingPagibig = deductionsBreakdown.find(d => d.type.toLowerCase().includes('pag-ibig'))
 
-  let governmentContributions = 0
 
   // Add SSS if not already deducted
   if (!existingSSS) {
     const sssContribution = Math.min(grossPay, settings.sssContribution.maxSalary) * settings.sssContribution.employeeRate
     deductionsBreakdown.push({ type: 'SSS Contribution', amount: sssContribution, frequency: 'MONTHLY' })
     totalDeductions += sssContribution
-    governmentContributions += sssContribution
   }
 
   // Add PhilHealth if not already deducted
@@ -237,7 +235,6 @@ export function calculatePayroll(
     const philhealthContribution = Math.min(grossPay, settings.philhealthContribution.maxSalary) * settings.philhealthContribution.employeeRate
     deductionsBreakdown.push({ type: 'PhilHealth Contribution', amount: philhealthContribution, frequency: 'MONTHLY' })
     totalDeductions += philhealthContribution
-    governmentContributions += philhealthContribution
   }
 
   // Add Pag-IBIG if not already deducted
@@ -245,7 +242,6 @@ export function calculatePayroll(
     const pagibigContribution = Math.min(grossPay, settings.pagibigContribution.maxSalary) * settings.pagibigContribution.employeeRate
     deductionsBreakdown.push({ type: 'Pag-IBIG Contribution', amount: pagibigContribution, frequency: 'MONTHLY' })
     totalDeductions += pagibigContribution
-    governmentContributions += pagibigContribution
   }
 
   // Calculate taxable income (gross pay minus non-taxable deductions)

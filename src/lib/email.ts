@@ -81,8 +81,6 @@ const getUserEmailSettings = async (userId: string): Promise<UserEmailSettings |
 
 // Create transporter with user-specific database configuration (required)
 const createEmailTransporter = async (userId?: string) => {
-  let config: EmailConfig
-
   // Always require user-specific settings from database
   if (!userId) {
     throw new Error('User ID is required for email sending. Environment variables are no longer used.')
@@ -93,7 +91,7 @@ const createEmailTransporter = async (userId?: string) => {
     throw new Error('Email settings not configured for this user. Please configure SMTP settings in your account.')
   }
 
-  config = {
+  const config: EmailConfig = {
     host: userSettings.smtpHost,
     port: userSettings.smtpPort,
     secure: false, // false for 587 with STARTTLS
@@ -139,7 +137,7 @@ export const sendEmail = async (emailData: EmailTemplate, userId: string): Promi
       attachments: emailData.attachments || [],
     }
 
-    const result = await transporter.sendMail(mailOptions)
+    await transporter.sendMail(mailOptions)
     return true
   } catch (error) {
     console.error('Failed to send email - detailed error:', {

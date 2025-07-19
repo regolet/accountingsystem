@@ -12,8 +12,6 @@ const createEarningSchema = z.object({
   isActive: z.boolean().default(true),
 })
 
-const updateEarningSchema = createEarningSchema.partial()
-
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }

@@ -51,7 +51,15 @@ export default function AttendanceReportsPage() {
   const [loading, setLoading] = useState(false)
   const [reportData, setReportData] = useState<{
     summary?: AttendanceSummary[];
-    attendances?: any[];
+    attendances?: {
+      id: string;
+      employee: Employee;
+      date: string;
+      clockIn?: string;
+      clockOut?: string;
+      totalHours?: number;
+      status: string;
+    }[];
     monthlyData?: MonthlyData[];
   } | null>(null)
 
@@ -362,11 +370,11 @@ export default function AttendanceReportsPage() {
         <h1 className="text-3xl font-bold">Attendance Reports</h1>
         <div className="flex gap-2">
           <RoleGuard permission="exportHRReports">
-            <Button variant="outline" onClick={() => exportReport('csv')} disabled={!reportData}>
+            <Button variant="secondary" onClick={() => exportReport('csv')} disabled={!reportData}>
               <Download className="h-4 w-4 mr-2" />
               Export CSV
             </Button>
-            <Button variant="outline" onClick={() => exportReport('pdf')} disabled={!reportData}>
+            <Button variant="secondary" onClick={() => exportReport('pdf')} disabled={!reportData}>
               <FileText className="h-4 w-4 mr-2" />
               Export PDF
             </Button>
@@ -455,7 +463,7 @@ export default function AttendanceReportsPage() {
         <Card>
           <CardContent className="text-center py-12">
             <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">Configure your report settings and click "Generate Report" to view attendance data.</p>
+            <p className="text-gray-500">Configure your report settings and click &quot;Generate Report&quot; to view attendance data.</p>
           </CardContent>
         </Card>
       )}

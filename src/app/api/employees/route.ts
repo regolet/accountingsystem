@@ -53,8 +53,8 @@ export async function GET(request: NextRequest) {
         position?: { contains: string; mode: 'insensitive' };
       }[];
       department?: string;
-      status?: string;
-      employmentType?: string;
+      status?: 'ACTIVE' | 'INACTIVE';
+      employmentType?: 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERN' | 'CONSULTANT';
     } = {}
 
     if (search) {
@@ -73,11 +73,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (status) {
-      where.status = status
+      where.status = status as 'ACTIVE' | 'INACTIVE'
     }
 
     if (employmentType) {
-      where.employmentType = employmentType
+      where.employmentType = employmentType as 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERN' | 'CONSULTANT'
     }
 
     const [employees, total] = await Promise.all([

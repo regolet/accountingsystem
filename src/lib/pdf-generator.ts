@@ -17,7 +17,13 @@ interface InvoiceWithRelations {
     name: string;
     email: string;
     phone: string | null;
-    address?: any;
+    address?: string | {
+      street?: string;
+      city?: string;
+      state?: string;
+      postalCode?: string;
+      country?: string;
+    };
     taxId?: string | null;
   };
   items: Array<{
@@ -43,7 +49,13 @@ interface ReimbursementWithRelations {
     name: string;
     email: string;
     phone: string | null;
-    address?: any;
+    address?: string | {
+      street?: string;
+      city?: string;
+      state?: string;
+      postalCode?: string;
+      country?: string;
+    };
     taxId?: string | null;
   };
   items: Array<{
@@ -239,7 +251,13 @@ function generateReimbursementHTML(reimbursement: ReimbursementWithRelations, se
     return new Date(date).toLocaleDateString()
   }
 
-  const formatAddress = (address: any) => {
+  const formatAddress = (address: string | {
+    street?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  }) => {
     if (typeof address === 'string') {
       return address
     }
@@ -563,7 +581,13 @@ function generateInvoiceHTML(invoice: InvoiceWithRelations, settings: Settings |
     return new Date(date).toLocaleDateString()
   }
 
-  const formatAddress = (address: any) => {
+  const formatAddress = (address: string | {
+    street?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  }) => {
     if (typeof address === 'string') {
       return address
     }

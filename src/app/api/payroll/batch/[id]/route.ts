@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { BatchStatus } from '@prisma/client'
 
 export async function GET(
   request: NextRequest,
@@ -41,7 +42,7 @@ export async function PUT(
     const updateData: {
       batchName?: string;
       payDate?: Date | null;
-      status?: string;
+      status?: BatchStatus;
     } = {}
     if (batchName !== undefined) updateData.batchName = batchName
     if (payDate !== undefined) updateData.payDate = payDate ? new Date(payDate) : null

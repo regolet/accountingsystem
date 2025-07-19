@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RoleGuard } from '@/components/ui/role-guard'
 import { PayslipViewer } from '@/components/ui/payslip-viewer'
-import { Plus, Search, Mail, Phone, Edit, Trash2, Eye, MapPin, User, Calendar, Building2, Briefcase, Receipt } from 'lucide-react'
+import { Plus, Search, Mail, Phone, Edit, Trash2, Eye, Building2, Briefcase, Receipt } from 'lucide-react'
 
 interface Address {
   street: string
@@ -113,18 +113,70 @@ export default function EmployeesPage() {
   const [viewingEmployee, setViewingEmployee] = useState<Employee | null>(null)
   const [showViewModal, setShowViewModal] = useState(false)
   const [activeTab, setActiveTab] = useState<'details' | 'earnings' | 'deductions' | 'payslips'>('details')
-  const [employeeEarnings, setEmployeeEarnings] = useState<any[]>([])
-  const [employeeDeductions, setEmployeeDeductions] = useState<any[]>([])
+  const [employeeEarnings, setEmployeeEarnings] = useState<{
+    id: string
+    type: string
+    amount: string
+    description?: string
+    effectiveDate?: string
+    endDate?: string
+    frequency?: string
+    isActive: boolean
+  }[]>([])
+  const [employeeDeductions, setEmployeeDeductions] = useState<{
+    id: string
+    type: string
+    amount?: string
+    percentage?: string
+    description?: string
+    effectiveDate?: string
+    endDate?: string
+    frequency?: string
+    isActive: boolean
+  }[]>([])
   const [loadingEarningsDeductions, setLoadingEarningsDeductions] = useState(false)
   const [showEarningForm, setShowEarningForm] = useState(false)
   const [showDeductionForm, setShowDeductionForm] = useState(false)
-  const [editingEarning, setEditingEarning] = useState<any>(null)
-  const [editingDeduction, setEditingDeduction] = useState<any>(null)
-  const [employeePayslips, setEmployeePayslips] = useState<any[]>([])
+  const [editingEarning, setEditingEarning] = useState<{
+    id: string
+    type: string
+    amount: string
+    description?: string
+    effectiveDate?: string
+    endDate?: string
+    frequency?: string
+    isActive: boolean
+  } | null>(null)
+  const [editingDeduction, setEditingDeduction] = useState<{
+    id: string
+    type: string
+    amount?: string
+    percentage?: string
+    description?: string
+    effectiveDate?: string
+    endDate?: string
+    frequency?: string
+    isActive: boolean
+  } | null>(null)
+  const [employeePayslips, setEmployeePayslips] = useState<{
+    id: string
+    payPeriodStart: string
+    payPeriodEnd: string
+    payDate?: string
+    grossPay?: string
+    totalDeductions?: string
+    netPay?: string
+    status: string
+  }[]>([])
   const [loadingPayslips, setLoadingPayslips] = useState(false)
   const [selectedPayslip, setSelectedPayslip] = useState<string | null>(null)
   const [deductionsSubTab, setDeductionsSubTab] = useState<'employee' | 'government'>('employee')
-  const [governmentContributions, setGovernmentContributions] = useState<any[]>([])
+  const [governmentContributions, setGovernmentContributions] = useState<{
+    type: string
+    description: string
+    amount: number
+    frequency: string
+  }[]>([])
   const [earningFormData, setEarningFormData] = useState({
     type: '',
     amount: '',
@@ -268,8 +320,8 @@ export default function EmployeesPage() {
       hireDate: employee.hireDate.split('T')[0],
       department: employee.department,
       position: employee.position,
-      employmentType: employee.employmentType as any,
-      status: employee.status as any,
+      employmentType: employee.employmentType,
+      status: employee.status,
       baseSalary: employee.baseSalary,
       currency: employee.currency,
       address: employee.address || {
@@ -578,7 +630,16 @@ export default function EmployeesPage() {
     }
   }
 
-  const handleEditEarning = (earning: any) => {
+  const handleEditEarning = (earning: {
+    id: string
+    type: string
+    amount: string
+    description?: string
+    effectiveDate?: string
+    endDate?: string
+    frequency?: string
+    isActive: boolean
+  }) => {
     setEditingEarning(earning)
     setEarningFormData({
       type: earning.type,
@@ -592,7 +653,17 @@ export default function EmployeesPage() {
     setShowEarningForm(true)
   }
 
-  const handleEditDeduction = (deduction: any) => {
+  const handleEditDeduction = (deduction: {
+    id: string
+    type: string
+    amount?: string
+    percentage?: string
+    description?: string
+    effectiveDate?: string
+    endDate?: string
+    frequency?: string
+    isActive: boolean
+  }) => {
     setEditingDeduction(deduction)
     setDeductionFormData({
       type: deduction.type,
@@ -822,7 +893,7 @@ export default function EmployeesPage() {
                     <select
                       className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       value={formData.employmentType}
-                      onChange={(e) => setFormData({ ...formData, employmentType: e.target.value as any })}
+                      onChange={(e) => setFormData({ ...formData, employmentType: e.target.value as 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERN' | 'CONSULTANT' })}
                     >
                       {EMPLOYMENT_TYPES.map(type => (
                         <option key={type.value} value={type.value}>{type.label}</option>
@@ -834,7 +905,7 @@ export default function EmployeesPage() {
                     <select
                       className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as 'ACTIVE' | 'INACTIVE' | 'TERMINATED' | 'ON_LEAVE' })}
                     >
                       {EMPLOYEE_STATUSES.map(status => (
                         <option key={status.value} value={status.value}>{status.label}</option>
@@ -1090,7 +1161,7 @@ export default function EmployeesPage() {
                     <select
                       className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       value={formData.employmentType}
-                      onChange={(e) => setFormData({ ...formData, employmentType: e.target.value as any })}
+                      onChange={(e) => setFormData({ ...formData, employmentType: e.target.value as 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERN' | 'CONSULTANT' })}
                     >
                       {EMPLOYMENT_TYPES.map(type => (
                         <option key={type.value} value={type.value}>{type.label}</option>
@@ -1102,7 +1173,7 @@ export default function EmployeesPage() {
                     <select
                       className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as 'ACTIVE' | 'INACTIVE' | 'TERMINATED' | 'ON_LEAVE' })}
                     >
                       {EMPLOYEE_STATUSES.map(status => (
                         <option key={status.value} value={status.value}>{status.label}</option>

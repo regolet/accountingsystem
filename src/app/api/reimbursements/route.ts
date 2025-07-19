@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { requireGranularPermission } from '@/lib/permissions'
+import { ReimbursementStatus } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
 
     const where: {
       customerId?: string;
-      status?: string;
+      status?: ReimbursementStatus;
       issueDate?: {
         gte?: Date;
         lte?: Date;
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (status) {
-      where.status = status
+      where.status = status as ReimbursementStatus
     }
 
     if (startDate && endDate) {
@@ -176,7 +177,7 @@ export async function POST(request: NextRequest) {
           }) => ({
             expenseId: item.expenseId || null,
             description: item.description,
-            amount: parseFloat(item.amount),
+            amount: parseFloat(String(item.amount)),
             date: new Date(item.date),
             category: item.category,
             receipt: item.receipt || null,

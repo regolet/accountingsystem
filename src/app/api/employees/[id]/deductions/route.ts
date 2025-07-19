@@ -17,8 +17,6 @@ const createDeductionSchema = baseDeductionSchema.refine((data) => data.amount |
   message: "Either amount or percentage must be provided"
 })
 
-const updateDeductionSchema = baseDeductionSchema
-
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }

@@ -87,7 +87,7 @@ export async function PUT(
       paymentMethod?: string;
       vendor?: string;
       receipt?: string;
-      status?: string;
+      status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAID';
       approvedBy?: string;
     } = {}
 
@@ -101,7 +101,7 @@ export async function PUT(
     if (vendor !== undefined) updateData.vendor = vendor
     if (receipt !== undefined) updateData.receipt = receipt
     if (status !== undefined) {
-      updateData.status = status
+      updateData.status = status as 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAID'
       // Set approvedBy when status changes to APPROVED
       if (status === 'APPROVED') {
         updateData.approvedBy = session.user.id

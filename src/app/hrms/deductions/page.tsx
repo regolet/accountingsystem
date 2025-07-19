@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RoleGuard } from '@/components/ui/role-guard'
-import { Plus, Search, Edit, Trash2, User, Settings, Calculator, FileText, Building2 } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, User, Settings, FileText, Building2 } from 'lucide-react'
 
 interface Employee {
   id: string
@@ -280,7 +280,7 @@ export default function DeductionsPage() {
               
               if (item.permission) {
                 return (
-                  <RoleGuard key={item.id} permission={item.permission}>
+                  <RoleGuard key={item.id} permission={item.permission as any}>
                     <button
                       onClick={() => setActiveSection(item.id)}
                       className={`w-full flex items-center px-3 py-2 mb-1 text-left rounded-lg transition-colors ${

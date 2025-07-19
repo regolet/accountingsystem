@@ -143,16 +143,16 @@ export default function AttendanceDashboard() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Attendance Dashboard</h1>
-          <p className="text-gray-600">Today's attendance overview and quick actions</p>
+          <p className="text-gray-600">Today&apos;s attendance overview and quick actions</p>
         </div>
         <div className="flex gap-2">
           <Link href="/hrms/attendance">
-            <Button variant="outline">
+            <Button variant="secondary">
               View All Attendance
             </Button>
           </Link>
           <Link href="/hrms/attendance/reports">
-            <Button variant="outline">
+            <Button variant="secondary">
               Reports
             </Button>
           </Link>
@@ -253,9 +253,9 @@ export default function AttendanceDashboard() {
       <Card className="mt-8">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Today's Attendance</span>
+            <span>Today&apos;s Attendance</span>
             <Link href="/hrms/attendance">
-              <Button variant="outline" size="sm">
+              <Button variant="secondary" size="sm">
                 View All
               </Button>
             </Link>

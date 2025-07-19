@@ -9,7 +9,7 @@ import ReimbursementsSection from './reimbursements-section'
 interface SidebarItem {
   id: string
   name: string
-  icon: React.ComponentType<any>
+  icon: React.ComponentType<{ className?: string }>
   permission?: string
 }
 

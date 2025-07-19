@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma, PayrollStatus } from '@prisma/client'
 
 export async function GET(
   request: NextRequest,
@@ -76,7 +77,7 @@ export async function PUT(
 
     const updateData: {
       payDate?: Date | null;
-      status?: string;
+      status?: PayrollStatus;
       notes?: string;
       totalWorkDays?: number;
       totalWorkHours?: number;
@@ -91,8 +92,8 @@ export async function PUT(
       netPay?: number;
       taxableIncome?: number;
       withholdingTax?: number;
-      earningsData?: any;
-      deductionsData?: any;
+      earningsData?: Prisma.InputJsonValue;
+      deductionsData?: Prisma.InputJsonValue;
       processedBy?: string;
       processedAt?: Date;
     } = {}

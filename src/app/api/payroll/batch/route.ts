@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { calculatePayroll, PayrollCalculationData, getPayPeriodDates } from '@/lib/payroll-utils'
+import { EmployeeStatus } from '@prisma/client'
+import { calculatePayroll, PayrollCalculationData } from '@/lib/payroll-utils'
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,11 +38,11 @@ export async function POST(request: NextRequest) {
 
     // Get employees to process
     const employeeFilter: {
-      status: string;
+      status: EmployeeStatus;
       id?: { in: string[] };
       department?: { in: string[] };
     } = {
-      status: 'ACTIVE',
+      status: EmployeeStatus.ACTIVE,
     }
 
     if (employeeIds && employeeIds.length > 0) {
