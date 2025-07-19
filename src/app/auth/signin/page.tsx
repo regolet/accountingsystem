@@ -62,7 +62,6 @@ export default function SignInPage() {
         redirect: false,
       })
 
-      console.log('Sign in result:', result) // Debug log
 
       if (result?.error) {
         // More specific error messages

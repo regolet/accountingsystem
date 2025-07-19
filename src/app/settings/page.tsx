@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Building2, CreditCard, Bell, Shield } from 'lucide-react'
+import { Building2, CreditCard, Bell, Shield, Mail, Send, Eye, EyeOff } from 'lucide-react'
 import { RoleGuard } from '@/components/ui/role-guard'
+import { EmailPreview } from '@/components/ui/email-preview'
 
 interface Settings {
   companyInfo: {
@@ -20,15 +21,34 @@ interface Settings {
     taxRate: number
     invoicePrefix: string
   }
+  emailTemplates: {
+    invoiceEmailSubject: string
+    invoiceEmailMessage: string
+  }
+}
+
+interface EmailSettings {
+  smtpHost: string
+  smtpPort: number
+  smtpUser: string
+  smtpPass: string
+  smtpFromName: string
+  smtpEnabled: boolean
+  hasPassword: boolean
 }
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
+  const [emailSettings, setEmailSettings] = useState<EmailSettings | null>(null)
+  const [emailLoading, setEmailLoading] = useState(true)
+  const [showPassword, setShowPassword] = useState(false)
+  const [testingEmail, setTestingEmail] = useState(false)
 
   useEffect(() => {
     fetchSettings()
+    fetchEmailSettings()
   }, [])
 
   const fetchSettings = async () => {
@@ -78,6 +98,103 @@ export default function SettingsPage() {
     updateSettings('invoiceSettings', settings.invoiceSettings)
   }
 
+  const handleEmailTemplatesSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!settings) return
+    updateSettings('emailTemplates', settings.emailTemplates)
+  }
+
+  const fetchEmailSettings = async () => {
+    try {
+      const response = await fetch('/api/auth/session')
+      const session = await response.json()
+      
+      if (session?.user?.id) {
+        const emailResponse = await fetch(`/api/users/${session.user.id}/email-settings`)
+        if (emailResponse.ok) {
+          const data = await emailResponse.json()
+          setEmailSettings({
+            smtpHost: data.emailSettings.smtpHost || 'smtp.gmail.com',
+            smtpPort: data.emailSettings.smtpPort || 587,
+            smtpUser: data.emailSettings.smtpUser || '',
+            smtpPass: '',
+            smtpFromName: data.emailSettings.smtpFromName || 'AccountingPro',
+            smtpEnabled: data.emailSettings.smtpEnabled || false,
+            hasPassword: data.emailSettings.hasPassword || false,
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching email settings:', error)
+    } finally {
+      setEmailLoading(false)
+    }
+  }
+
+  const updateEmailSettings = async () => {
+    if (!emailSettings) return
+    
+    setSaving('emailSettings')
+    try {
+      const response = await fetch('/api/auth/session')
+      const session = await response.json()
+      
+      if (session?.user?.id) {
+        const updateResponse = await fetch(`/api/users/${session.user.id}/email-settings`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(emailSettings),
+        })
+        
+        if (updateResponse.ok) {
+          alert('Email settings updated successfully!')
+          fetchEmailSettings()
+        } else {
+          const errorData = await updateResponse.json()
+          alert(`Failed to update email settings: ${errorData.error}`)
+        }
+      }
+    } catch (error) {
+      console.error('Error updating email settings:', error)
+      alert('Failed to update email settings')
+    } finally {
+      setSaving(null)
+    }
+  }
+
+  const testEmailSettings = async () => {
+    setTestingEmail(true)
+    try {
+      const response = await fetch('/api/auth/session')
+      const session = await response.json()
+      
+      if (session?.user?.id) {
+        const testResponse = await fetch(`/api/users/${session.user.id}/email-settings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        })
+        
+        if (testResponse.ok) {
+          const result = await testResponse.json()
+          alert(`Test email sent successfully to ${result.recipient}`)
+        } else {
+          const errorData = await testResponse.json()
+          alert(`Failed to send test email: ${errorData.error}`)
+        }
+      }
+    } catch (error) {
+      console.error('Error testing email settings:', error)
+      alert('Failed to send test email')
+    } finally {
+      setTestingEmail(false)
+    }
+  }
+
+  const handleEmailSettingsSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    updateEmailSettings()
+  }
+
 
   if (loading) {
     return (
@@ -92,8 +209,9 @@ export default function SettingsPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-lg text-red-600">Failed to load settings</div>
       </div>
-    )
+    );
   }
+  
   return (
     <RoleGuard permission="viewSettings" fallback={
       <div className="p-8">
@@ -269,6 +387,202 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        {/* Email Templates Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Mail className="h-5 w-5 mr-2" />
+              Email Templates
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleEmailTemplatesSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Invoice Email Subject</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder="Invoice {invoiceNumber} - {amount}"
+                  value={settings.emailTemplates.invoiceEmailSubject}
+                  onChange={(e) => setSettings({
+                    ...settings,
+                    emailTemplates: { ...settings.emailTemplates, invoiceEmailSubject: e.target.value }
+                  })}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Available variables: {'{invoiceNumber}'}, {'{amount}'}, {'{customerName}'}, {'{companyName}'}
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Invoice Email Message</label>
+                <textarea
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  rows={8}
+                  placeholder="Dear {customerName},&#10;&#10;Please find attached your invoice {invoiceNumber} for {amount}.&#10;&#10;Due date: {dueDate}&#10;&#10;Thank you for your business!&#10;&#10;Best regards,&#10;{companyName}"
+                  value={settings.emailTemplates.invoiceEmailMessage}
+                  onChange={(e) => setSettings({
+                    ...settings,
+                    emailTemplates: { ...settings.emailTemplates, invoiceEmailMessage: e.target.value }
+                  })}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Available variables: {'{invoiceNumber}'}, {'{amount}'}, {'{customerName}'}, {'{dueDate}'}, {'{companyName}'}
+                </p>
+              </div>
+              
+              <Button type="submit" disabled={saving === 'emailTemplates'}>
+                {saving === 'emailTemplates' ? 'Saving...' : 'Save Email Templates'}
+              </Button>
+            </form>
+
+            {/* Email Preview */}
+            <EmailPreview 
+              subject={settings.emailTemplates.invoiceEmailSubject}
+              message={settings.emailTemplates.invoiceEmailMessage}
+              sampleData={{
+                invoiceNumber: 'INV-001',
+                amount: '₱1,250.00',
+                customerName: 'John Doe',
+                dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+                companyName: settings.companyInfo.companyName || 'Your Company Name'
+              }}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Gmail SMTP Settings Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Mail className="h-5 w-5 mr-2" />
+              Gmail SMTP Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {emailLoading ? (
+              <div className="text-center py-4">Loading email settings...</div>
+            ) : (
+              <form onSubmit={handleEmailSettingsSubmit} className="space-y-4">
+                <div className="flex items-center space-x-2 mb-4">
+                  <input
+                    type="checkbox"
+                    id="smtpEnabled"
+                    checked={emailSettings?.smtpEnabled || false}
+                    onChange={(e) => setEmailSettings(prev => prev ? {...prev, smtpEnabled: e.target.checked} : null)}
+                    className="rounded"
+                  />
+                  <label htmlFor="smtpEnabled" className="text-sm font-medium">
+                    Enable email sending for this account
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">SMTP Host</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      placeholder="smtp.gmail.com"
+                      value={emailSettings?.smtpHost || ''}
+                      onChange={(e) => setEmailSettings(prev => prev ? {...prev, smtpHost: e.target.value} : null)}
+                      disabled={!emailSettings?.smtpEnabled}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">SMTP Port</label>
+                    <input
+                      type="number"
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      placeholder="587"
+                      value={emailSettings?.smtpPort || 587}
+                      onChange={(e) => setEmailSettings(prev => prev ? {...prev, smtpPort: parseInt(e.target.value)} : null)}
+                      disabled={!emailSettings?.smtpEnabled}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Gmail Email</label>
+                    <input
+                      type="email"
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      placeholder="your-email@gmail.com"
+                      value={emailSettings?.smtpUser || ''}
+                      onChange={(e) => setEmailSettings(prev => prev ? {...prev, smtpUser: e.target.value} : null)}
+                      disabled={!emailSettings?.smtpEnabled}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">From Name</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      placeholder="AccountingPro"
+                      value={emailSettings?.smtpFromName || ''}
+                      onChange={(e) => setEmailSettings(prev => prev ? {...prev, smtpFromName: e.target.value} : null)}
+                      disabled={!emailSettings?.smtpEnabled}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Gmail App Password 
+                    {emailSettings?.hasPassword && (
+                      <span className="text-green-600 text-xs ml-2">(Password is set)</span>
+                    )}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      className="w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      placeholder={emailSettings?.hasPassword ? "Leave blank to keep current password" : "Enter Gmail app password"}
+                      value={emailSettings?.smtpPass || ''}
+                      onChange={(e) => setEmailSettings(prev => prev ? {...prev, smtpPass: e.target.value} : null)}
+                      disabled={!emailSettings?.smtpEnabled}
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={!emailSettings?.smtpEnabled}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5 text-gray-400" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-gray-400" />
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Generate an app password in your Google Account settings → Security → App passwords
+                  </p>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button 
+                    type="submit" 
+                    disabled={saving === 'emailSettings' || !emailSettings?.smtpEnabled}
+                  >
+                    {saving === 'emailSettings' ? 'Saving...' : 'Save Email Settings'}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="secondary"
+                    onClick={testEmailSettings}
+                    disabled={testingEmail || !emailSettings?.smtpEnabled || !emailSettings?.smtpUser}
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    {testingEmail ? 'Sending...' : 'Send Test Email'}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
@@ -331,8 +645,8 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         </div>
-        </div>
       </div>
+    </div>
     </RoleGuard>
   )
 }

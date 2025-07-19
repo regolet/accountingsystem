@@ -86,6 +86,8 @@ export default function InvoiceDetailsPage() {
   const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentDescription, setPaymentDescription] = useState('')
   const [processingPayment, setProcessingPayment] = useState(false)
+  const [sendingEmail, setSendingEmail] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
 
   useEffect(() => {
     if (params.id) {
@@ -189,6 +191,40 @@ export default function InvoiceDetailsPage() {
     } catch (error) {
       console.error('Error deleting invoice:', error)
       alert('Failed to delete invoice')
+    }
+  }
+
+  const sendInvoiceEmail = async () => {
+    if (!invoice?.customer?.email) {
+      alert('Customer email is not available')
+      return
+    }
+
+    setSendingEmail(true)
+    try {
+      const response = await fetch(`/api/invoices/${params.id}/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        setEmailSent(true)
+        alert(`Invoice email sent successfully to ${result.recipient}`)
+        
+        // Also update status to SENT if not already
+        if (invoice.status === 'PENDING') {
+          await updateStatus('SENT')
+        }
+      } else {
+        const errorData = await response.json()
+        alert(`Failed to send email: ${errorData.error}`)
+      }
+    } catch (error) {
+      console.error('Email sending error:', error)
+      alert('Failed to send email. Please try again.')
+    } finally {
+      setSendingEmail(false)
     }
   }
 
@@ -436,11 +472,11 @@ export default function InvoiceDetailsPage() {
             <RoleGuard permission="sendInvoices">
               <Button 
                 size="sm" 
-                onClick={() => updateStatus('SENT')}
-                disabled={updating}
+                onClick={sendInvoiceEmail}
+                disabled={sendingEmail || !invoice.customer?.email}
               >
                 <Send className="h-4 w-4 mr-2" />
-                Send Invoice
+                {sendingEmail ? 'Sending...' : 'Send Invoice'}
               </Button>
             </RoleGuard>
           )}

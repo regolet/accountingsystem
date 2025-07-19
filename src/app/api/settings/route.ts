@@ -18,6 +18,11 @@ const invoiceSettingsSchema = z.object({
   invoicePrefix: z.string(),
 })
 
+const emailTemplateSchema = z.object({
+  invoiceEmailSubject: z.string().min(1),
+  invoiceEmailMessage: z.string().min(1),
+})
+
 export async function GET() {
   try {
     // Check if DATABASE_URL is available (skip during build if not)
@@ -35,6 +40,10 @@ export async function GET() {
           defaultCurrency: 'PHP',
           taxRate: 12.0,
           invoicePrefix: 'INV-',
+        },
+        emailTemplates: {
+          invoiceEmailSubject: 'Invoice {invoiceNumber} - {amount}',
+          invoiceEmailMessage: 'Dear {customerName},\n\nPlease find attached your invoice {invoiceNumber} for {amount}.\n\nDue date: {dueDate}\n\nThank you for your business!\n\nBest regards,\n{companyName}',
         }
       })
     }
@@ -72,6 +81,10 @@ export async function GET() {
         defaultCurrency: settings.defaultCurrency,
         taxRate: parseFloat(settings.defaultTaxRate.toString()),
         invoicePrefix: settings.invoicePrefix,
+      },
+      emailTemplates: {
+        invoiceEmailSubject: settings.invoiceEmailSubject,
+        invoiceEmailMessage: settings.invoiceEmailMessage,
       }
     })
   } catch (error) {
@@ -157,6 +170,26 @@ export async function PUT(request: NextRequest) {
           defaultCurrency: updatedSettings.defaultCurrency,
           taxRate: parseFloat(updatedSettings.defaultTaxRate.toString()),
           invoicePrefix: updatedSettings.invoicePrefix,
+        }
+      })
+    }
+
+    if (type === 'emailTemplates') {
+      const validatedData = emailTemplateSchema.parse(data)
+      
+      const updatedSettings = await prisma.settings.update({
+        where: { id: settings.id },
+        data: {
+          invoiceEmailSubject: validatedData.invoiceEmailSubject,
+          invoiceEmailMessage: validatedData.invoiceEmailMessage,
+        }
+      })
+
+      return NextResponse.json({ 
+        message: 'Email templates updated successfully',
+        data: {
+          invoiceEmailSubject: updatedSettings.invoiceEmailSubject,
+          invoiceEmailMessage: updatedSettings.invoiceEmailMessage,
         }
       })
     }

@@ -25,7 +25,6 @@ export async function createDemoUser() {
       }
     })
 
-    console.log('Demo user created:', user.email)
     return user
   } catch (error) {
     console.error('Error creating demo user:', error)

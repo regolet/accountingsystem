@@ -82,6 +82,7 @@ export default function CustomersPage() {
   const [showViewModal, setShowViewModal] = useState(false)
   const [customerInvoices, setCustomerInvoices] = useState<Invoice[]>([])
   const [customerTransactions, setCustomerTransactions] = useState<Transaction[]>([])
+  const [sendingBatchEmail, setSendingBatchEmail] = useState(false)
   const [loadingHistory, setLoadingHistory] = useState(false)
   const [activeTab, setActiveTab] = useState<'details' | 'billing' | 'payments'>('details')
 
@@ -258,6 +259,60 @@ export default function CustomersPage() {
     setActiveTab('details')
   }
 
+  const sendBalanceReminders = async () => {
+    setSendingBatchEmail(true)
+    try {
+      const response = await fetch('/api/customers/batch-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          emailType: 'balance_reminder',
+          includeOverdueOnly: false,
+        }),
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        alert(`Balance reminders sent: ${result.sent} successful, ${result.failed} failed`)
+      } else {
+        const errorData = await response.json()
+        alert(`Failed to send reminders: ${errorData.error}`)
+      }
+    } catch (error) {
+      console.error('Batch email error:', error)
+      alert('Failed to send balance reminders. Please try again.')
+    } finally {
+      setSendingBatchEmail(false)
+    }
+  }
+
+  const sendOverdueNotices = async () => {
+    setSendingBatchEmail(true)
+    try {
+      const response = await fetch('/api/customers/batch-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          emailType: 'overdue_notice',
+          includeOverdueOnly: true,
+        }),
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        alert(`Overdue notices sent: ${result.sent} successful, ${result.failed} failed`)
+      } else {
+        const errorData = await response.json()
+        alert(`Failed to send notices: ${errorData.error}`)
+      }
+    } catch (error) {
+      console.error('Batch email error:', error)
+      alert('Failed to send overdue notices. Please try again.')
+    } finally {
+      setSendingBatchEmail(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -270,12 +325,36 @@ export default function CustomersPage() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Customers</h1>
-        <RoleGuard permission="createCustomers">
-          <Button onClick={() => setShowAddForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Customer
-          </Button>
-        </RoleGuard>
+        <div className="flex gap-2">
+          <RoleGuard permission="sendInvoices">
+            <Button 
+              variant="secondary" 
+              onClick={sendBalanceReminders}
+              disabled={sendingBatchEmail}
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              {sendingBatchEmail ? 'Sending...' : 'Send Balance Reminders'}
+            </Button>
+          </RoleGuard>
+          
+          <RoleGuard permission="sendInvoices">
+            <Button 
+              variant="secondary" 
+              onClick={sendOverdueNotices}
+              disabled={sendingBatchEmail}
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              {sendingBatchEmail ? 'Sending...' : 'Send Overdue Notices'}
+            </Button>
+          </RoleGuard>
+          
+          <RoleGuard permission="createCustomers">
+            <Button onClick={() => setShowAddForm(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Customer
+            </Button>
+          </RoleGuard>
+        </div>
       </div>
 
       <div className="mb-6">
