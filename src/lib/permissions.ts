@@ -33,6 +33,13 @@ export const permissions = {
   editExpenses: ['ADMIN', 'ACCOUNTANT'],
   deleteExpenses: ['ADMIN'],
   
+  // Reimbursements
+  viewReimbursements: ['ADMIN', 'ACCOUNTANT', 'VIEWER'],
+  createReimbursements: ['ADMIN', 'ACCOUNTANT'],
+  editReimbursements: ['ADMIN', 'ACCOUNTANT'],
+  deleteReimbursements: ['ADMIN'],
+  sendReimbursements: ['ADMIN', 'ACCOUNTANT'],
+  
   // Settings
   viewSettings: ['ADMIN', 'ACCOUNTANT'],
   editSettings: ['ADMIN'],
@@ -298,6 +305,36 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
     ]
   },
   {
+    name: 'Reimbursements',
+    permissions: [
+      {
+        key: 'viewReimbursements',
+        label: 'View Reimbursements',
+        description: 'View reimbursement requests and billing'
+      },
+      {
+        key: 'createReimbursements',
+        label: 'Create Reimbursements',
+        description: 'Create new reimbursement requests'
+      },
+      {
+        key: 'editReimbursements',
+        label: 'Edit Reimbursements',
+        description: 'Modify existing reimbursements'
+      },
+      {
+        key: 'deleteReimbursements',
+        label: 'Delete Reimbursements',
+        description: 'Remove reimbursement records'
+      },
+      {
+        key: 'sendReimbursements',
+        label: 'Send Reimbursements',
+        description: 'Send reimbursement bills to customers'
+      }
+    ]
+  },
+  {
     name: 'HRMS - Employees',
     permissions: [
       {
@@ -461,6 +498,10 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<Role, (keyof typeof permissions)[]
     'viewExpenses',
     'createExpenses',
     'editExpenses',
+    'viewReimbursements',
+    'createReimbursements',
+    'editReimbursements',
+    'sendReimbursements',
     'viewHRMS',
     'viewEmployees',
     'viewAttendance',
@@ -480,6 +521,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<Role, (keyof typeof permissions)[]
     'viewSettings',
     'viewSubscriptions',
     'viewExpenses',
+    'viewReimbursements',
   ]
 }
 

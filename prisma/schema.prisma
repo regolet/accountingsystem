@@ -30,12 +30,14 @@ model User {
   smtpFromName      String?   @default("AccountingPro")
   smtpEnabled       Boolean   @default(false)
   
-  accounts          Account[]
-  sessions          Session[]
-  submittedExpenses Expense[] @relation("ExpenseSubmitter")
-  approvedExpenses  Expense[] @relation("ExpenseApprover")
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  accounts              Account[]
+  sessions              Session[]
+  submittedExpenses     Expense[]       @relation("ExpenseSubmitter")
+  approvedExpenses      Expense[]       @relation("ExpenseApprover")
+  createdReimbursements Reimbursement[] @relation("ReimbursementCreator")
+  approvedReimbursements Reimbursement[] @relation("ReimbursementApprover")
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
 
   @@map("users")
 }
@@ -86,16 +88,17 @@ enum Role {
 }
 
 model Customer {
-  id            String         @id @default(cuid())
-  name          String
-  email         String         @unique
-  phone         String?
-  taxId         String?
-  address       Json?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  invoices      Invoice[]
-  subscriptions Subscription[]
+  id             String          @id @default(cuid())
+  name           String
+  email          String          @unique
+  phone          String?
+  taxId          String?
+  address        Json?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  invoices       Invoice[]
+  subscriptions  Subscription[]
+  reimbursements Reimbursement[]
 
   @@map("customers")
 }
@@ -258,6 +261,10 @@ model Settings {
   // Email Templates
   invoiceEmailSubject   String   @default("Invoice {invoiceNumber} - {amount}")  @db.Text
   invoiceEmailMessage   String   @default("Dear {customerName},\n\nPlease find attached your invoice {invoiceNumber} for {amount}.\n\nDue date: {dueDate}\n\nThank you for your business!\n\nBest regards,\n{companyName}")  @db.Text
+  
+  // Reimbursement Email Templates
+  reimbursementEmailSubject   String   @default("Reimbursement Request {reimbursementNumber} - {amount}")  @db.Text
+  reimbursementEmailMessage   String   @default("Dear {customerName},\n\nWe hope this email finds you well. Please find attached your reimbursement request for approved expenses.\n\nReimbursement Details:\n• Reimbursement Number: {reimbursementNumber}\n• Total Amount: {amount}\n• Due Date: {dueDate}\n\nThe attached PDF contains a detailed breakdown of all reimbursed expenses. Please review the details and let us know if you have any questions.\n\nWe appreciate your business and look forward to continuing our partnership.\n\nBest regards,\n{companyName} Team")  @db.Text
   
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
@@ -574,27 +581,28 @@ enum BatchStatus {
 }
 
 model Expense {
-  id            String        @id @default(cuid())
-  title         String
-  description   String?       @db.Text
-  amount        Decimal       @db.Decimal(10, 2)
-  currency      String        @default("PHP")
-  category      String
-  date          DateTime      @db.Date
-  paymentMethod String
-  vendor        String?
-  receipt       String?
-  status        ExpenseStatus @default(PENDING)
+  id               String              @id @default(cuid())
+  title            String
+  description      String?             @db.Text
+  amount           Decimal             @db.Decimal(10, 2)
+  currency         String              @default("PHP")
+  category         String
+  date             DateTime            @db.Date
+  paymentMethod    String
+  vendor           String?
+  receipt          String?
+  status           ExpenseStatus       @default(PENDING)
   
   // Audit fields
-  submittedBy   String?
-  approvedBy    String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  submittedBy      String?
+  approvedBy       String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
   
   // Relations
-  submitter     User?         @relation("ExpenseSubmitter", fields: [submittedBy], references: [id])
-  approver      User?         @relation("ExpenseApprover", fields: [approvedBy], references: [id])
+  submitter        User?               @relation("ExpenseSubmitter", fields: [submittedBy], references: [id])
+  approver         User?               @relation("ExpenseApprover", fields: [approvedBy], references: [id])
+  reimbursementItems ReimbursementItem[]
 
   @@index([status])
   @@index([category])
@@ -608,4 +616,70 @@ enum ExpenseStatus {
   APPROVED
   REJECTED
   PAID
+}
+
+model Reimbursement {
+  id                String                @id @default(cuid())
+  reimbursementNumber String              @unique
+  customerId        String
+  customer          Customer              @relation(fields: [customerId], references: [id])
+  title             String
+  description       String?               @db.Text
+  status            ReimbursementStatus   @default(DRAFT)
+  
+  // Financial Information
+  subtotal          Decimal               @db.Decimal(10, 2) @default(0)
+  tax               Decimal               @db.Decimal(10, 2) @default(0)
+  total             Decimal               @db.Decimal(10, 2) @default(0)
+  currency          String                @default("PHP")
+  
+  // Dates
+  issueDate         DateTime              @default(now())
+  dueDate           DateTime?             @db.Date
+  
+  // Relations
+  items             ReimbursementItem[]
+  
+  // Audit fields
+  createdBy         String?
+  approvedBy        String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  
+  // Relations to User
+  creator           User?                 @relation("ReimbursementCreator", fields: [createdBy], references: [id])
+  approver          User?                 @relation("ReimbursementApprover", fields: [approvedBy], references: [id])
+
+  @@index([customerId])
+  @@index([status])
+  @@index([issueDate])
+  @@index([dueDate])
+  @@map("reimbursements")
+}
+
+model ReimbursementItem {
+  id              String        @id @default(cuid())
+  reimbursementId String
+  reimbursement   Reimbursement @relation(fields: [reimbursementId], references: [id], onDelete: Cascade)
+  expenseId       String?
+  expense         Expense?      @relation(fields: [expenseId], references: [id])
+  description     String
+  amount          Decimal       @db.Decimal(10, 2)
+  date            DateTime      @db.Date
+  category        String
+  receipt         String?
+  notes           String?       @db.Text
+
+  @@index([reimbursementId])
+  @@index([expenseId])
+  @@map("reimbursement_items")
+}
+
+enum ReimbursementStatus {
+  DRAFT
+  SENT
+  APPROVED
+  PAID
+  REJECTED
+  CANCELLED
 }

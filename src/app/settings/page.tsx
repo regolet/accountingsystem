@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Building2, CreditCard, Bell, Shield, Mail, Send, Eye, EyeOff, Upload, X, Users, FileText, Settings } from 'lucide-react'
 import { RoleGuard } from '@/components/ui/role-guard'
-import { EmailPreview } from '@/components/ui/email-preview'
 
 interface Settings {
   companyInfo: {
@@ -30,6 +29,8 @@ interface Settings {
   emailTemplates: {
     invoiceEmailSubject: string
     invoiceEmailMessage: string
+    reimbursementEmailSubject: string
+    reimbursementEmailMessage: string
   }
 }
 
@@ -602,47 +603,92 @@ export default function SettingsPage() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleEmailTemplatesSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Invoice Email Subject
-            </label>
-            <input
-              type="text"
-              value={settings?.emailTemplates.invoiceEmailSubject || ''}
-              onChange={(e) => setSettings(prev => prev ? {
-                ...prev,
-                emailTemplates: { ...prev.emailTemplates, invoiceEmailSubject: e.target.value }
-              } : null)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Invoice #{invoiceNumber} from {companyName}"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Invoice Email Message
-            </label>
-            <textarea
-              rows={6}
-              value={settings?.emailTemplates.invoiceEmailMessage || ''}
-              onChange={(e) => setSettings(prev => prev ? {
-                ...prev,
-                emailTemplates: { ...prev.emailTemplates, invoiceEmailMessage: e.target.value }
-              } : null)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Dear {customerName},...&#10;&#10;Please find attached your invoice...&#10;&#10;Best regards,&#10;{companyName}"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Available variables: {'{customerName}'}, {'{companyName}'}, {'{invoiceNumber}'}, {'{amount}'}, {'{dueDate}'}
-            </p>
+        <form onSubmit={handleEmailTemplatesSubmit} className="space-y-6">
+          {/* Invoice Templates */}
+          <div className="border-b pb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Invoice Email Templates</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Invoice Email Subject
+                </label>
+                <input
+                  type="text"
+                  value={settings?.emailTemplates.invoiceEmailSubject || ''}
+                  onChange={(e) => setSettings(prev => prev ? {
+                    ...prev,
+                    emailTemplates: { ...prev.emailTemplates, invoiceEmailSubject: e.target.value }
+                  } : null)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Invoice #{invoiceNumber} from {companyName}"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Invoice Email Message
+                </label>
+                <textarea
+                  rows={6}
+                  value={settings?.emailTemplates.invoiceEmailMessage || ''}
+                  onChange={(e) => setSettings(prev => prev ? {
+                    ...prev,
+                    emailTemplates: { ...prev.emailTemplates, invoiceEmailMessage: e.target.value }
+                  } : null)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Dear {customerName},...&#10;&#10;Please find attached your invoice...&#10;&#10;Best regards,&#10;{companyName}"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Available variables: {'{customerName}'}, {'{companyName}'}, {'{invoiceNumber}'}, {'{amount}'}, {'{dueDate}'}
+                </p>
+              </div>
+
+            </div>
           </div>
 
-          <EmailPreview 
-            subject={settings?.emailTemplates.invoiceEmailSubject || ''}
-            message={settings?.emailTemplates.invoiceEmailMessage || ''}
-            companyName={settings?.companyInfo.companyName || 'Your Company'}
-          />
+          {/* Reimbursement Templates */}
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Reimbursement Email Templates</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Reimbursement Email Subject
+                </label>
+                <input
+                  type="text"
+                  value={settings?.emailTemplates.reimbursementEmailSubject || ''}
+                  onChange={(e) => setSettings(prev => prev ? {
+                    ...prev,
+                    emailTemplates: { ...prev.emailTemplates, reimbursementEmailSubject: e.target.value }
+                  } : null)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Reimbursement Request {reimbursementNumber} - {amount}"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Reimbursement Email Message
+                </label>
+                <textarea
+                  rows={6}
+                  value={settings?.emailTemplates.reimbursementEmailMessage || ''}
+                  onChange={(e) => setSettings(prev => prev ? {
+                    ...prev,
+                    emailTemplates: { ...prev.emailTemplates, reimbursementEmailMessage: e.target.value }
+                  } : null)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Dear {customerName},...&#10;&#10;We are pleased to inform you about your reimbursement request...&#10;&#10;Best regards,&#10;{companyName}"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Available variables: {'{customerName}'}, {'{companyName}'}, {'{reimbursementNumber}'}, {'{amount}'}, {'{dueDate}'}
+                </p>
+              </div>
+
+            </div>
+          </div>
 
           <RoleGuard permission="editSettings">
             <Button type="submit" disabled={saving === 'emailTemplates'}>

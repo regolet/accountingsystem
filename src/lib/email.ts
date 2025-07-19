@@ -184,6 +184,201 @@ export const sendBatchEmails = async (
   return { sent, failed }
 }
 
+// Generate reimbursement email from custom templates
+export const generateReimbursementEmailFromTemplate = async (
+  customerName: string,
+  reimbursementNumber: string,
+  amount: string,
+  dueDate: string,
+  companyName: string = 'AccountingPro'
+): Promise<{ subject: string; html: string }> => {
+  try {
+    // Get email templates from settings
+    const settings = await prisma.settings.findFirst()
+    
+    const variables = {
+      customerName,
+      reimbursementNumber,
+      amount,
+      dueDate,
+      companyName
+    }
+
+    let subject = 'Reimbursement Request {reimbursementNumber} - {amount}'
+    let message = 'Dear {customerName},\n\nWe are pleased to inform you about your reimbursement request for approved expenses.\n\nReimbursement Number: {reimbursementNumber}\nTotal Amount: {amount}\n{dueDate}\n\nPlease review the details. If you have any questions regarding this reimbursement, please don\'t hesitate to contact us.\n\nThank you for your business!\n\nBest regards,\n{companyName}'
+
+    if (settings) {
+      subject = settings.reimbursementEmailSubject
+      message = settings.reimbursementEmailMessage
+    }
+
+    const processedSubject = replaceTemplateVariables(subject, variables)
+    const processedMessage = replaceTemplateVariables(message, variables)
+
+    // Convert message to HTML (preserve line breaks)
+    const htmlMessage = processedMessage.replace(/\n/g, '<br>')
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${processedSubject}</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          .header {
+            background: #1e40af;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+          }
+          .content {
+            background: #f8f9fa;
+            padding: 30px;
+            border: 1px solid #e9ecef;
+            white-space: pre-line;
+          }
+          .footer {
+            background: #6c757d;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 0 0 8px 8px;
+            font-size: 14px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>${companyName}</h1>
+          <h2>Reimbursement Request</h2>
+        </div>
+        
+        <div class="content">
+          ${htmlMessage}
+        </div>
+        
+        <div class="footer">
+          <p>This is an automated message. Please do not reply to this email.</p>
+          <p>© ${new Date().getFullYear()} ${companyName}. All rights reserved.</p>
+        </div>
+      </body>
+      </html>
+    `
+
+    return { subject: processedSubject, html }
+  } catch (error) {
+    console.error('Error generating reimbursement email from template:', error)
+    // Fallback to default template
+    return {
+      subject: `Reimbursement Request ${reimbursementNumber} - ${amount}`,
+      html: generateReimbursementEmailHTML(customerName, reimbursementNumber, amount, dueDate, companyName)
+    }
+  }
+}
+
+// Generate reimbursement email HTML template (fallback)
+export const generateReimbursementEmailHTML = (
+  customerName: string,
+  reimbursementNumber: string,
+  amount: string,
+  dueDate: string,
+  companyName: string = 'AccountingPro'
+): string => {
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Reimbursement Request ${reimbursementNumber}</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+        .header {
+          background: #1e40af;
+          color: white;
+          padding: 20px;
+          text-align: center;
+          border-radius: 8px 8px 0 0;
+        }
+        .content {
+          background: #f8f9fa;
+          padding: 30px;
+          border: 1px solid #e9ecef;
+        }
+        .reimbursement-details {
+          background: white;
+          padding: 20px;
+          border-radius: 8px;
+          margin: 20px 0;
+          border-left: 4px solid #1e40af;
+        }
+        .amount {
+          font-size: 24px;
+          font-weight: bold;
+          color: #1e40af;
+        }
+        .footer {
+          background: #6c757d;
+          color: white;
+          padding: 15px;
+          text-align: center;
+          border-radius: 0 0 8px 8px;
+          font-size: 14px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>${companyName}</h1>
+        <h2>Reimbursement Request</h2>
+      </div>
+      
+      <div class="content">
+        <h3>Dear ${customerName},</h3>
+        
+        <p>We are pleased to inform you about your reimbursement request for approved expenses.</p>
+        
+        <div class="reimbursement-details">
+          <h4>Reimbursement Details:</h4>
+          <p><strong>Reimbursement Number:</strong> ${reimbursementNumber}</p>
+          <p><strong>Total Amount:</strong> <span class="amount">${amount}</span></p>
+          ${dueDate ? `<p><strong>Payment Due:</strong> ${dueDate}</p>` : ''}
+        </div>
+        
+        <p>Please review the details. If you have any questions regarding this reimbursement, please don't hesitate to contact us.</p>
+        
+        <p>Thank you for your business!</p>
+        
+        <p>Best regards,<br>
+        <strong>${companyName} Team</strong></p>
+      </div>
+      
+      <div class="footer">
+        <p>This is an automated message. Please do not reply to this email.</p>
+        <p>© ${new Date().getFullYear()} ${companyName}. All rights reserved.</p>
+      </div>
+    </body>
+    </html>
+  `
+}
+
 // Generate invoice email from custom templates
 export const generateInvoiceEmailFromTemplate = async (
   customerName: string,

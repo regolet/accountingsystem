@@ -22,6 +22,8 @@ const invoiceSettingsSchema = z.object({
 const emailTemplateSchema = z.object({
   invoiceEmailSubject: z.string().min(1),
   invoiceEmailMessage: z.string().min(1),
+  reimbursementEmailSubject: z.string().min(1),
+  reimbursementEmailMessage: z.string().min(1),
 })
 
 const employeeSettingsSchema = z.object({
@@ -57,6 +59,8 @@ export async function GET() {
         emailTemplates: {
           invoiceEmailSubject: 'Invoice {invoiceNumber} - {amount}',
           invoiceEmailMessage: 'Dear {customerName},\n\nPlease find attached your invoice {invoiceNumber} for {amount}.\n\nDue date: {dueDate}\n\nThank you for your business!\n\nBest regards,\n{companyName}',
+          reimbursementEmailSubject: 'Reimbursement Request {reimbursementNumber} - {amount}',
+          reimbursementEmailMessage: 'Dear {customerName},\n\nWe hope this email finds you well. Please find attached your reimbursement request for approved expenses.\n\nReimbursement Details:\n• Reimbursement Number: {reimbursementNumber}\n• Total Amount: {amount}\n• Due Date: {dueDate}\n\nThe attached PDF contains a detailed breakdown of all reimbursed expenses. Please review the details and let us know if you have any questions.\n\nWe appreciate your business and look forward to continuing our partnership.\n\nBest regards,\n{companyName} Team',
         }
       })
     }
@@ -104,6 +108,8 @@ export async function GET() {
       emailTemplates: {
         invoiceEmailSubject: settings.invoiceEmailSubject,
         invoiceEmailMessage: settings.invoiceEmailMessage,
+        reimbursementEmailSubject: settings.reimbursementEmailSubject,
+        reimbursementEmailMessage: settings.reimbursementEmailMessage,
       }
     })
   } catch (error) {
@@ -225,6 +231,8 @@ export async function PUT(request: NextRequest) {
         data: {
           invoiceEmailSubject: validatedData.invoiceEmailSubject,
           invoiceEmailMessage: validatedData.invoiceEmailMessage,
+          reimbursementEmailSubject: validatedData.reimbursementEmailSubject,
+          reimbursementEmailMessage: validatedData.reimbursementEmailMessage,
         }
       })
 
@@ -233,6 +241,8 @@ export async function PUT(request: NextRequest) {
         data: {
           invoiceEmailSubject: updatedSettings.invoiceEmailSubject,
           invoiceEmailMessage: updatedSettings.invoiceEmailMessage,
+          reimbursementEmailSubject: updatedSettings.reimbursementEmailSubject,
+          reimbursementEmailMessage: updatedSettings.reimbursementEmailMessage,
         }
       })
     }
