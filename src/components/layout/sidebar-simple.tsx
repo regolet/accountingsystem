@@ -10,6 +10,13 @@ import {
   Settings, 
   Building2,
   LogOut,
+  Coins,
+  Briefcase,
+  Clock,
+  DollarSign,
+  BarChart3,
+  Minus,
+  Plus,
 } from 'lucide-react'
 
 const navigation = [
@@ -29,9 +36,44 @@ const navigation = [
     icon: FileText,
   },
   {
+    name: 'Services',
+    href: '/subscriptions' as const,
+    icon: Coins,
+  },
+  {
     name: 'Reports',
     href: '/reports' as const,
     icon: TrendingUp,
+  },
+  {
+    name: 'Employees',
+    href: '/hrms/employees' as const,
+    icon: Users,
+  },
+  {
+    name: 'Attendance',
+    href: '/hrms/attendance' as const,
+    icon: Clock,
+  },
+  {
+    name: 'Payroll',
+    href: '/hrms/payroll' as const,
+    icon: DollarSign,
+  },
+  {
+    name: 'Earnings',
+    href: '/hrms/earnings' as const,
+    icon: Plus,
+  },
+  {
+    name: 'Deductions',
+    href: '/hrms/deductions' as const,
+    icon: Minus,
+  },
+  {
+    name: 'HR Reports',
+    href: '/hrms/reports' as const,
+    icon: BarChart3,
   },
   {
     name: 'Settings',

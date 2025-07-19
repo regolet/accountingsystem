@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Building2, CreditCard, Bell, Shield, Mail, Send, Eye, EyeOff, Upload, X } from 'lucide-react'
+import { Building2, CreditCard, Bell, Shield, Mail, Send, Eye, EyeOff, Upload, X, Users, FileText, Settings } from 'lucide-react'
 import { RoleGuard } from '@/components/ui/role-guard'
 import { EmailPreview } from '@/components/ui/email-preview'
 
@@ -22,6 +22,11 @@ interface Settings {
     taxRate: number
     invoicePrefix: string
   }
+  employeeSettings: {
+    employeePrefix: string
+    employeeIdLength: number
+    employeeStartNumber: number
+  }
   emailTemplates: {
     invoiceEmailSubject: string
     invoiceEmailMessage: string
@@ -38,6 +43,22 @@ interface EmailSettings {
   hasPassword: boolean
 }
 
+interface SidebarItem {
+  id: string
+  name: string
+  icon: React.ElementType
+  permission?: string
+}
+
+const sidebarItems: SidebarItem[] = [
+  { id: 'company', name: 'Company Info', icon: Building2 },
+  { id: 'invoice', name: 'Invoice Settings', icon: FileText },
+  { id: 'employee', name: 'Employee Settings', icon: Users },
+  { id: 'email-templates', name: 'Email Templates', icon: Mail },
+  { id: 'email-settings', name: 'Email Configuration', icon: Settings },
+  { id: 'security', name: 'Security', icon: Shield, permission: 'editSettings' },
+]
+
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null)
   const [loading, setLoading] = useState(true)
@@ -46,6 +67,7 @@ export default function SettingsPage() {
   const [emailLoading, setEmailLoading] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [testingEmail, setTestingEmail] = useState(false)
+  const [activeSection, setActiveSection] = useState('company')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -110,6 +132,12 @@ export default function SettingsPage() {
     e.preventDefault()
     if (!settings) return
     updateSettings('emailTemplates', settings.emailTemplates)
+  }
+
+  const handleEmployeeSettingsSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!settings) return
+    updateSettings('employeeSettings', settings.employeeSettings)
   }
 
   const fetchEmailSettings = async () => {
@@ -188,7 +216,6 @@ export default function SettingsPage() {
         } else {
           const errorData = await testResponse.json()
           
-          // Handle specific error codes with helpful messages
           if (errorData.code === 'EMAIL_NOT_ENABLED') {
             alert('❌ Email sending is not enabled.\n\nPlease enable email sending by checking the checkbox above.')
           } else if (errorData.code === 'EMAIL_NOT_CONFIGURED') {
@@ -217,13 +244,11 @@ export default function SettingsPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Check file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
       alert('Logo file size must be less than 2MB')
       return
     }
 
-    // Check file type
     if (!file.type.startsWith('image/')) {
       alert('Please upload an image file')
       return
@@ -250,6 +275,585 @@ export default function SettingsPage() {
     }
   }
 
+  const renderCompanyInfo = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Building2 className="h-5 w-5 mr-2" />
+          Company Information
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleCompanyInfoSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Company Name
+              </label>
+              <input
+                type="text"
+                value={settings?.companyInfo.companyName || ''}
+                onChange={(e) => setSettings(prev => prev ? {
+                  ...prev,
+                  companyInfo: { ...prev.companyInfo, companyName: e.target.value }
+                } : null)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tax ID
+              </label>
+              <input
+                type="text"
+                value={settings?.companyInfo.taxId || ''}
+                onChange={(e) => setSettings(prev => prev ? {
+                  ...prev,
+                  companyInfo: { ...prev.companyInfo, taxId: e.target.value }
+                } : null)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                value={settings?.companyInfo.email || ''}
+                onChange={(e) => setSettings(prev => prev ? {
+                  ...prev,
+                  companyInfo: { ...prev.companyInfo, email: e.target.value }
+                } : null)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phone
+              </label>
+              <input
+                type="tel"
+                value={settings?.companyInfo.phone || ''}
+                onChange={(e) => setSettings(prev => prev ? {
+                  ...prev,
+                  companyInfo: { ...prev.companyInfo, phone: e.target.value }
+                } : null)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Address
+            </label>
+            <textarea
+              rows={3}
+              value={settings?.companyInfo.address || ''}
+              onChange={(e) => setSettings(prev => prev ? {
+                ...prev,
+                companyInfo: { ...prev.companyInfo, address: e.target.value }
+              } : null)}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Company Logo
+            </label>
+            {settings?.companyInfo.logo ? (
+              <div className="flex items-center space-x-4">
+                <img 
+                  src={settings.companyInfo.logo} 
+                  alt="Company Logo" 
+                  className="h-16 w-16 object-contain border border-gray-200 rounded"
+                />
+                <div className="flex space-x-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Change
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={removeLogo}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Upload Logo
+              </Button>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleLogoUpload}
+              className="hidden"
+            />
+            <p className="text-sm text-gray-500 mt-1">
+              Recommended: PNG or JPG format, max 2MB
+            </p>
+          </div>
+
+          <RoleGuard permission="editSettings">
+            <Button type="submit" disabled={saving === 'companyInfo'}>
+              {saving === 'companyInfo' ? 'Saving...' : 'Save Company Information'}
+            </Button>
+          </RoleGuard>
+        </form>
+      </CardContent>
+    </Card>
+  )
+
+  const renderInvoiceSettings = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <FileText className="h-5 w-5 mr-2" />
+          Invoice Settings
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleInvoiceSettingsSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Default Payment Terms (days)
+              </label>
+              <input
+                type="number"
+                value={settings?.invoiceSettings.defaultPaymentTerms || ''}
+                onChange={(e) => setSettings(prev => prev ? {
+                  ...prev,
+                  invoiceSettings: { ...prev.invoiceSettings, defaultPaymentTerms: e.target.value }
+                } : null)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                min="1"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Default Currency
+              </label>
+              <select
+                value={settings?.invoiceSettings.defaultCurrency || ''}
+                onChange={(e) => setSettings(prev => prev ? {
+                  ...prev,
+                  invoiceSettings: { ...prev.invoiceSettings, defaultCurrency: e.target.value }
+                } : null)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+              >
+                <option value="">Select Currency</option>
+                <option value="PHP">PHP - Philippine Peso</option>
+                <option value="USD">USD - US Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tax Rate (%)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                value={settings?.invoiceSettings.taxRate || ''}
+                onChange={(e) => setSettings(prev => prev ? {
+                  ...prev,
+                  invoiceSettings: { ...prev.invoiceSettings, taxRate: parseFloat(e.target.value) || 0 }
+                } : null)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                min="0"
+                max="100"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Invoice Prefix
+              </label>
+              <input
+                type="text"
+                value={settings?.invoiceSettings.invoicePrefix || ''}
+                onChange={(e) => setSettings(prev => prev ? {
+                  ...prev,
+                  invoiceSettings: { ...prev.invoiceSettings, invoicePrefix: e.target.value }
+                } : null)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="INV-"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                This prefix will be added to all invoice numbers (e.g., INV-001)
+              </p>
+            </div>
+          </div>
+
+          <RoleGuard permission="editSettings">
+            <Button type="submit" disabled={saving === 'invoiceSettings'}>
+              {saving === 'invoiceSettings' ? 'Saving...' : 'Save Invoice Settings'}
+            </Button>
+          </RoleGuard>
+        </form>
+      </CardContent>
+    </Card>
+  )
+
+  const renderEmployeeSettings = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Users className="h-5 w-5 mr-2" />
+          Employee Settings
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleEmployeeSettingsSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Employee ID Prefix
+              </label>
+              <input
+                type="text"
+                value={settings?.employeeSettings.employeePrefix || ''}
+                onChange={(e) => setSettings(prev => prev ? {
+                  ...prev,
+                  employeeSettings: { ...prev.employeeSettings, employeePrefix: e.target.value }
+                } : null)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="EMP-"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                ID Number Length
+              </label>
+              <input
+                type="number"
+                value={settings?.employeeSettings.employeeIdLength || ''}
+                onChange={(e) => setSettings(prev => prev ? {
+                  ...prev,
+                  employeeSettings: { ...prev.employeeSettings, employeeIdLength: parseInt(e.target.value) || 3 }
+                } : null)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                min="1"
+                max="10"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Starting Number
+              </label>
+              <input
+                type="number"
+                value={settings?.employeeSettings.employeeStartNumber || ''}
+                onChange={(e) => setSettings(prev => prev ? {
+                  ...prev,
+                  employeeSettings: { ...prev.employeeSettings, employeeStartNumber: parseInt(e.target.value) || 1 }
+                } : null)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                min="1"
+              />
+            </div>
+          </div>
+          
+          <div className="bg-gray-50 p-3 rounded-md">
+            <p className="text-sm text-gray-700">
+              <strong>Preview:</strong> {settings?.employeeSettings.employeePrefix || 'EMP-'}
+              {String(settings?.employeeSettings.employeeStartNumber || 1).padStart(settings?.employeeSettings.employeeIdLength || 3, '0')}
+            </p>
+          </div>
+
+          <RoleGuard permission="editSettings">
+            <Button type="submit" disabled={saving === 'employeeSettings'}>
+              {saving === 'employeeSettings' ? 'Saving...' : 'Save Employee Settings'}
+            </Button>
+          </RoleGuard>
+        </form>
+      </CardContent>
+    </Card>
+  )
+
+  const renderEmailTemplates = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Mail className="h-5 w-5 mr-2" />
+          Email Templates
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleEmailTemplatesSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Invoice Email Subject
+            </label>
+            <input
+              type="text"
+              value={settings?.emailTemplates.invoiceEmailSubject || ''}
+              onChange={(e) => setSettings(prev => prev ? {
+                ...prev,
+                emailTemplates: { ...prev.emailTemplates, invoiceEmailSubject: e.target.value }
+              } : null)}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Invoice #{invoiceNumber} from {companyName}"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Invoice Email Message
+            </label>
+            <textarea
+              rows={6}
+              value={settings?.emailTemplates.invoiceEmailMessage || ''}
+              onChange={(e) => setSettings(prev => prev ? {
+                ...prev,
+                emailTemplates: { ...prev.emailTemplates, invoiceEmailMessage: e.target.value }
+              } : null)}
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Dear {customerName},...&#10;&#10;Please find attached your invoice...&#10;&#10;Best regards,&#10;{companyName}"
+            />
+            <p className="text-sm text-gray-500 mt-1">
+              Available variables: {'{customerName}'}, {'{companyName}'}, {'{invoiceNumber}'}, {'{amount}'}, {'{dueDate}'}
+            </p>
+          </div>
+
+          <EmailPreview 
+            subject={settings?.emailTemplates.invoiceEmailSubject || ''}
+            message={settings?.emailTemplates.invoiceEmailMessage || ''}
+            companyName={settings?.companyInfo.companyName || 'Your Company'}
+          />
+
+          <RoleGuard permission="editSettings">
+            <Button type="submit" disabled={saving === 'emailTemplates'}>
+              {saving === 'emailTemplates' ? 'Saving...' : 'Save Email Templates'}
+            </Button>
+          </RoleGuard>
+        </form>
+      </CardContent>
+    </Card>
+  )
+
+  const renderEmailSettings = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Settings className="h-5 w-5 mr-2" />
+          Email Configuration
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {emailLoading ? (
+          <div className="text-center py-4">Loading email settings...</div>
+        ) : (
+          <form onSubmit={handleEmailSettingsSubmit} className="space-y-4">
+            <div className="flex items-center space-x-2 mb-4">
+              <input
+                type="checkbox"
+                id="emailEnabled"
+                checked={emailSettings?.smtpEnabled || false}
+                onChange={(e) => setEmailSettings(prev => prev ? {
+                  ...prev,
+                  smtpEnabled: e.target.checked
+                } : null)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="emailEnabled" className="text-sm font-medium text-gray-700">
+                Enable email sending
+              </label>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  SMTP Host
+                </label>
+                <input
+                  type="text"
+                  value={emailSettings?.smtpHost || ''}
+                  onChange={(e) => setEmailSettings(prev => prev ? {
+                    ...prev,
+                    smtpHost: e.target.value
+                  } : null)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="smtp.gmail.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  SMTP Port
+                </label>
+                <input
+                  type="number"
+                  value={emailSettings?.smtpPort || ''}
+                  onChange={(e) => setEmailSettings(prev => prev ? {
+                    ...prev,
+                    smtpPort: parseInt(e.target.value) || 587
+                  } : null)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="587"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Gmail Email
+                </label>
+                <input
+                  type="email"
+                  value={emailSettings?.smtpUser || ''}
+                  onChange={(e) => setEmailSettings(prev => prev ? {
+                    ...prev,
+                    smtpUser: e.target.value
+                  } : null)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="your-email@gmail.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  From Name
+                </label>
+                <input
+                  type="text"
+                  value={emailSettings?.smtpFromName || ''}
+                  onChange={(e) => setEmailSettings(prev => prev ? {
+                    ...prev,
+                    smtpFromName: e.target.value
+                  } : null)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="AccountingPro"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Gmail App Password
+                {emailSettings?.hasPassword && (
+                  <span className="text-green-600 text-xs ml-2">✓ Password saved</span>
+                )}
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={emailSettings?.smtpPass || ''}
+                  onChange={(e) => setEmailSettings(prev => prev ? {
+                    ...prev,
+                    smtpPass: e.target.value
+                  } : null)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10"
+                  placeholder={emailSettings?.hasPassword ? "Leave blank to keep current password" : "Enter your Gmail app password"}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-400" />
+                  )}
+                </button>
+              </div>
+              <p className="text-sm text-gray-500 mt-1">
+                Generate an app password in your Google Account settings for enhanced security.
+              </p>
+            </div>
+
+            <div className="flex space-x-2">
+              <RoleGuard permission="editSettings">
+                <Button type="submit" disabled={saving === 'emailSettings'}>
+                  {saving === 'emailSettings' ? 'Saving...' : 'Save Email Settings'}
+                </Button>
+              </RoleGuard>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={testEmailSettings}
+                disabled={testingEmail || !emailSettings?.smtpEnabled}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                {testingEmail ? 'Sending...' : 'Send Test Email'}
+              </Button>
+            </div>
+          </form>
+        )}
+      </CardContent>
+    </Card>
+  )
+
+  const renderSecurity = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Shield className="h-5 w-5 mr-2" />
+          Security Settings
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="bg-blue-50 p-4 rounded-md">
+            <h3 className="text-sm font-medium text-blue-800 mb-2">Security Features</h3>
+            <ul className="text-sm text-blue-700 space-y-1">
+              <li>• Password encryption and secure storage</li>
+              <li>• Role-based access control</li>
+              <li>• Session management</li>
+              <li>• API rate limiting</li>
+            </ul>
+          </div>
+          <div className="bg-green-50 p-4 rounded-md">
+            <h3 className="text-sm font-medium text-green-800 mb-2">Best Practices</h3>
+            <ul className="text-sm text-green-700 space-y-1">
+              <li>• Use strong passwords for all accounts</li>
+              <li>• Enable Gmail app passwords for email</li>
+              <li>• Regularly review user permissions</li>
+              <li>• Keep software updated</li>
+            </ul>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'company':
+        return renderCompanyInfo()
+      case 'invoice':
+        return renderInvoiceSettings()
+      case 'employee':
+        return renderEmployeeSettings()
+      case 'email-templates':
+        return renderEmailTemplates()
+      case 'email-settings':
+        return renderEmailSettings()
+      case 'security':
+        return renderSecurity()
+      default:
+        return renderCompanyInfo()
+    }
+  }
 
   if (loading) {
     return (
@@ -264,7 +868,7 @@ export default function SettingsPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-lg text-red-600">Failed to load settings</div>
       </div>
-    );
+    )
   }
   
   return (
@@ -272,480 +876,47 @@ export default function SettingsPage() {
       <div className="p-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-          <p className="text-gray-600">You don&apos;t have permission to view settings.</p>
+          <p className="text-gray-600">You don't have permission to view settings.</p>
         </div>
       </div>
     }>
-      <div className="p-8">
-        <h1 className="text-3xl font-bold mb-8">Settings</h1>
-      
-      <div className="grid gap-6">
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Building2 className="h-5 w-5 mr-2" />
-              Company Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleCompanyInfoSubmit} className="space-y-4">
-              {/* Logo Upload Section */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium mb-2">Company Logo</label>
-                <div className="flex items-center space-x-4">
-                  {settings.companyInfo.logo ? (
-                    <div className="relative">
-                      <img 
-                        src={settings.companyInfo.logo} 
-                        alt="Company Logo" 
-                        className="h-24 w-24 object-contain border rounded"
-                      />
-                      <button
-                        type="button"
-                        onClick={removeLogo}
-                        className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="h-24 w-24 border-2 border-dashed rounded flex items-center justify-center">
-                      <Upload className="h-8 w-8 text-gray-400" />
-                    </div>
-                  )}
-                  <div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLogoUpload}
-                      className="hidden"
-                    />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {settings.companyInfo.logo ? 'Change Logo' : 'Upload Logo'}
-                    </Button>
-                    <p className="text-xs text-gray-500 mt-1">Max size: 2MB. PNG, JPG, GIF</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Company Name</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="Your Company Name"
-                    value={settings.companyInfo.companyName}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      companyInfo: { ...settings.companyInfo, companyName: e.target.value }
-                    })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Tax ID</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="Tax Identification Number"
-                    value={settings.companyInfo.taxId}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      companyInfo: { ...settings.companyInfo, taxId: e.target.value }
-                    })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Email</label>
-                  <input
-                    type="email"
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="company@example.com"
-                    value={settings.companyInfo.email}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      companyInfo: { ...settings.companyInfo, email: e.target.value }
-                    })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Phone</label>
-                  <input
-                    type="tel"
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="+63 (xxx) xxx-xxxx"
-                    value={settings.companyInfo.phone}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      companyInfo: { ...settings.companyInfo, phone: e.target.value }
-                    })}
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Address</label>
-                <textarea
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  rows={3}
-                  placeholder="Company address"
-                  value={settings.companyInfo.address}
-                  onChange={(e) => setSettings({
-                    ...settings,
-                    companyInfo: { ...settings.companyInfo, address: e.target.value }
-                  })}
-                />
-              </div>
-              <Button type="submit" disabled={saving === 'companyInfo'}>
-                {saving === 'companyInfo' ? 'Saving...' : 'Save Company Information'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <CreditCard className="h-5 w-5 mr-2" />
-              Invoice Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleInvoiceSettingsSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Default Payment Terms</label>
-                  <select 
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    value={settings.invoiceSettings.defaultPaymentTerms}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      invoiceSettings: { ...settings.invoiceSettings, defaultPaymentTerms: e.target.value }
-                    })}
-                  >
-                    <option value="Net 30">Net 30</option>
-                    <option value="Net 15">Net 15</option>
-                    <option value="Net 60">Net 60</option>
-                    <option value="Due on Receipt">Due on Receipt</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Default Currency</label>
-                  <select 
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    value={settings.invoiceSettings.defaultCurrency}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      invoiceSettings: { ...settings.invoiceSettings, defaultCurrency: e.target.value }
-                    })}
-                  >
-                    <option value="PHP">PHP - Philippine Peso</option>
-                    <option value="USD">USD - US Dollar</option>
-                    <option value="EUR">EUR - Euro</option>
-                    <option value="GBP">GBP - British Pound</option>
-                    <option value="CAD">CAD - Canadian Dollar</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Tax Rate (%)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="12.00"
-                    value={settings.invoiceSettings.taxRate}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      invoiceSettings: { ...settings.invoiceSettings, taxRate: parseFloat(e.target.value) || 0 }
-                    })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Invoice Prefix</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="INV-"
-                    value={settings.invoiceSettings.invoicePrefix}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      invoiceSettings: { ...settings.invoiceSettings, invoicePrefix: e.target.value }
-                    })}
-                  />
-                </div>
-              </div>
-              <Button type="submit" disabled={saving === 'invoiceSettings'}>
-                {saving === 'invoiceSettings' ? 'Saving...' : 'Save Invoice Settings'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Email Templates Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Mail className="h-5 w-5 mr-2" />
-              Email Templates
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleEmailTemplatesSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Invoice Email Subject</label>
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="Invoice {invoiceNumber} - {amount}"
-                  value={settings.emailTemplates.invoiceEmailSubject}
-                  onChange={(e) => setSettings({
-                    ...settings,
-                    emailTemplates: { ...settings.emailTemplates, invoiceEmailSubject: e.target.value }
-                  })}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Available variables: {'{invoiceNumber}'}, {'{amount}'}, {'{customerName}'}, {'{companyName}'}
-                </p>
-              </div>
+      <div className="flex h-screen bg-gray-50">
+        {/* Sidebar */}
+        <div className="w-64 bg-white shadow-sm border-r border-gray-200">
+          <div className="p-6 border-b border-gray-200">
+            <h1 className="text-xl font-bold text-gray-900">Settings</h1>
+          </div>
+          <nav className="p-4">
+            {sidebarItems.map((item) => {
+              const Icon = item.icon
+              const isActive = activeSection === item.id
               
-              <div>
-                <label className="block text-sm font-medium mb-1">Invoice Email Message</label>
-                <textarea
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  rows={8}
-                  placeholder="Dear {customerName},&#10;&#10;Please find attached your invoice {invoiceNumber} for {amount}.&#10;&#10;Due date: {dueDate}&#10;&#10;Thank you for your business!&#10;&#10;Best regards,&#10;{companyName}"
-                  value={settings.emailTemplates.invoiceEmailMessage}
-                  onChange={(e) => setSettings({
-                    ...settings,
-                    emailTemplates: { ...settings.emailTemplates, invoiceEmailMessage: e.target.value }
-                  })}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Available variables: {'{invoiceNumber}'}, {'{amount}'}, {'{customerName}'}, {'{dueDate}'}, {'{companyName}'}
-                </p>
-              </div>
-              
-              <Button type="submit" disabled={saving === 'emailTemplates'}>
-                {saving === 'emailTemplates' ? 'Saving...' : 'Save Email Templates'}
-              </Button>
-            </form>
-
-            {/* Email Preview */}
-            <EmailPreview 
-              subject={settings.emailTemplates.invoiceEmailSubject}
-              message={settings.emailTemplates.invoiceEmailMessage}
-              sampleData={{
-                invoiceNumber: 'INV-001',
-                amount: '₱1,250.00',
-                customerName: 'John Doe',
-                dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
-                companyName: settings.companyInfo.companyName || 'Your Company Name'
-              }}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Gmail SMTP Settings Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Mail className="h-5 w-5 mr-2" />
-              Gmail SMTP Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {emailLoading ? (
-              <div className="text-center py-4">Loading email settings...</div>
-            ) : (
-              <form onSubmit={handleEmailSettingsSubmit} className="space-y-4">
-                <div className="flex items-center space-x-2 mb-4">
-                  <input
-                    type="checkbox"
-                    id="smtpEnabled"
-                    checked={emailSettings?.smtpEnabled || false}
-                    onChange={(e) => setEmailSettings(prev => prev ? {...prev, smtpEnabled: e.target.checked} : null)}
-                    className="rounded"
-                  />
-                  <label htmlFor="smtpEnabled" className="text-sm font-medium">
-                    Enable email sending for this account
-                  </label>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">SMTP Host</label>
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      placeholder="smtp.gmail.com"
-                      value={emailSettings?.smtpHost || ''}
-                      onChange={(e) => setEmailSettings(prev => prev ? {...prev, smtpHost: e.target.value} : null)}
-                      disabled={!emailSettings?.smtpEnabled}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">SMTP Port</label>
-                    <input
-                      type="number"
-                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      placeholder="587"
-                      value={emailSettings?.smtpPort || 587}
-                      onChange={(e) => setEmailSettings(prev => prev ? {...prev, smtpPort: parseInt(e.target.value)} : null)}
-                      disabled={!emailSettings?.smtpEnabled}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Gmail Email</label>
-                    <input
-                      type="email"
-                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      placeholder="your-email@gmail.com"
-                      value={emailSettings?.smtpUser || ''}
-                      onChange={(e) => setEmailSettings(prev => prev ? {...prev, smtpUser: e.target.value} : null)}
-                      disabled={!emailSettings?.smtpEnabled}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">From Name</label>
-                    <input
-                      type="text"
-                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      placeholder="AccountingPro"
-                      value={emailSettings?.smtpFromName || ''}
-                      onChange={(e) => setEmailSettings(prev => prev ? {...prev, smtpFromName: e.target.value} : null)}
-                      disabled={!emailSettings?.smtpEnabled}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Gmail App Password 
-                    {emailSettings?.hasPassword && (
-                      <span className="text-green-600 text-xs ml-2">(Password is set)</span>
-                    )}
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      className="w-full px-3 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      placeholder={emailSettings?.hasPassword ? "Leave blank to keep current password" : "Enter Gmail app password"}
-                      value={emailSettings?.smtpPass || ''}
-                      onChange={(e) => setEmailSettings(prev => prev ? {...prev, smtpPass: e.target.value} : null)}
-                      disabled={!emailSettings?.smtpEnabled}
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowPassword(!showPassword)}
-                      disabled={!emailSettings?.smtpEnabled}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-5 w-5 text-gray-400" />
-                      ) : (
-                        <Eye className="h-5 w-5 text-gray-400" />
-                      )}
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Generate an app password in your Google Account settings → Security → App passwords
-                  </p>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button 
-                    type="submit" 
-                    disabled={saving === 'emailSettings' || !emailSettings?.smtpEnabled}
+              return (
+                <RoleGuard key={item.id} permission={item.permission || 'viewSettings'}>
+                  <button
+                    onClick={() => setActiveSection(item.id)}
+                    className={`w-full flex items-center px-3 py-2 mb-1 text-left rounded-lg transition-colors ${
+                      isActive
+                        ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
                   >
-                    {saving === 'emailSettings' ? 'Saving...' : 'Save Email Settings'}
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="secondary"
-                    onClick={testEmailSettings}
-                    disabled={testingEmail || !emailSettings?.smtpEnabled || !emailSettings?.smtpUser}
-                  >
-                    <Send className="h-4 w-4 mr-2" />
-                    {testingEmail ? 'Sending...' : 'Send Test Email'}
-                  </Button>
-                </div>
-              </form>
-            )}
-          </CardContent>
-        </Card>
+                    <Icon className={`h-5 w-5 mr-3 ${isActive ? 'text-blue-600' : 'text-gray-400'}`} />
+                    <span className="text-sm font-medium">{item.name}</span>
+                  </button>
+                </RoleGuard>
+              )
+            })}
+          </nav>
+        </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Bell className="h-5 w-5 mr-2" />
-                Notifications
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Email notifications for new invoices</span>
-                <input type="checkbox" className="rounded" defaultChecked />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Overdue invoice reminders</span>
-                <input type="checkbox" className="rounded" defaultChecked />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Payment received notifications</span>
-                <input type="checkbox" className="rounded" defaultChecked />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Weekly financial summary</span>
-                <input type="checkbox" className="rounded" />
-              </div>
-              <Button>Save Notification Settings</Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Shield className="h-5 w-5 mr-2" />
-                Security
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Current Password</label>
-                <input
-                  type="password"
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">New Password</label>
-                <input
-                  type="password"
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Confirm New Password</label>
-                <input
-                  type="password"
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-              <Button>Update Password</Button>
-            </CardContent>
-          </Card>
+        {/* Main content */}
+        <div className="flex-1 overflow-auto">
+          <div className="p-8">
+            {renderContent()}
+          </div>
         </div>
       </div>
-    </div>
     </RoleGuard>
   )
 }

@@ -24,6 +24,12 @@ const emailTemplateSchema = z.object({
   invoiceEmailMessage: z.string().min(1),
 })
 
+const employeeSettingsSchema = z.object({
+  employeePrefix: z.string().min(1),
+  employeeIdLength: z.number().min(1).max(10),
+  employeeStartNumber: z.number().min(1),
+})
+
 export async function GET() {
   try {
     // Check if DATABASE_URL is available (skip during build if not)
@@ -42,6 +48,11 @@ export async function GET() {
           defaultCurrency: 'PHP',
           taxRate: 12.0,
           invoicePrefix: 'INV-',
+        },
+        employeeSettings: {
+          employeePrefix: 'EMP-',
+          employeeIdLength: 4,
+          employeeStartNumber: 1,
         },
         emailTemplates: {
           invoiceEmailSubject: 'Invoice {invoiceNumber} - {amount}',
@@ -84,6 +95,11 @@ export async function GET() {
         defaultCurrency: settings.defaultCurrency,
         taxRate: parseFloat(settings.defaultTaxRate.toString()),
         invoicePrefix: settings.invoicePrefix,
+      },
+      employeeSettings: {
+        employeePrefix: settings.employeePrefix,
+        employeeIdLength: settings.employeeIdLength,
+        employeeStartNumber: settings.employeeStartNumber,
       },
       emailTemplates: {
         invoiceEmailSubject: settings.invoiceEmailSubject,
@@ -175,6 +191,28 @@ export async function PUT(request: NextRequest) {
           defaultCurrency: updatedSettings.defaultCurrency,
           taxRate: parseFloat(updatedSettings.defaultTaxRate.toString()),
           invoicePrefix: updatedSettings.invoicePrefix,
+        }
+      })
+    }
+
+    if (type === 'employeeSettings') {
+      const validatedData = employeeSettingsSchema.parse(data)
+      
+      const updatedSettings = await prisma.settings.update({
+        where: { id: settings.id },
+        data: {
+          employeePrefix: validatedData.employeePrefix,
+          employeeIdLength: validatedData.employeeIdLength,
+          employeeStartNumber: validatedData.employeeStartNumber,
+        }
+      })
+
+      return NextResponse.json({ 
+        message: 'Employee settings updated successfully',
+        data: {
+          employeePrefix: updatedSettings.employeePrefix,
+          employeeIdLength: updatedSettings.employeeIdLength,
+          employeeStartNumber: updatedSettings.employeeStartNumber,
         }
       })
     }
