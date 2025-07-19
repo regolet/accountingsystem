@@ -38,7 +38,11 @@ export async function PUT(
     }
 
     // Only allow editing certain fields
-    const updateData: any = {}
+    const updateData: {
+      batchName?: string;
+      payDate?: Date | null;
+      status?: string;
+    } = {}
     if (batchName !== undefined) updateData.batchName = batchName
     if (payDate !== undefined) updateData.payDate = payDate ? new Date(payDate) : null
     if (status !== undefined) updateData.status = status

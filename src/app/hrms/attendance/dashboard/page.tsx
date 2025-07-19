@@ -8,6 +8,15 @@ import ClockWidget from '@/components/attendance/clock-widget'
 import { Users, Clock, TrendingUp, Calendar, AlertCircle, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 
+interface Employee {
+  id: string
+  employeeId: string
+  firstName: string
+  lastName: string
+  department: string
+  position: string
+}
+
 interface AttendanceStats {
   totalEmployees: number
   presentToday: number
@@ -33,7 +42,7 @@ interface RecentAttendance {
 export default function AttendanceDashboard() {
   const [stats, setStats] = useState<AttendanceStats | null>(null)
   const [recentAttendance, setRecentAttendance] = useState<RecentAttendance[]>([])
-  const [employees, setEmployees] = useState([])
+  const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -51,9 +60,9 @@ export default function AttendanceDashboard() {
       if (response.ok && data.summary) {
         const totalEmployees = await fetch('/api/employees').then(r => r.json()).then(d => d.employees?.length || 0)
         
-        const presentToday = data.summary.filter((s: any) => s.totalDays > 0).length
-        const totalHours = data.summary.reduce((sum: number, s: any) => sum + (s.totalHours || 0), 0)
-        const overtimeHours = data.summary.reduce((sum: number, s: any) => sum + (s.overtimeHours || 0), 0)
+        const presentToday = data.summary.filter((s: { totalDays: number }) => s.totalDays > 0).length
+        const totalHours = data.summary.reduce((sum: number, s: { totalHours?: number }) => sum + (s.totalHours || 0), 0)
+        const overtimeHours = data.summary.reduce((sum: number, s: { overtimeHours?: number }) => sum + (s.overtimeHours || 0), 0)
 
         setStats({
           totalEmployees,

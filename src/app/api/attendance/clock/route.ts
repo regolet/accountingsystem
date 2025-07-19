@@ -37,7 +37,18 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    const updateData: any = {
+    const updateData: {
+      location?: string;
+      ipAddress?: string | null;
+      clockIn?: Date;
+      status?: string;
+      clockOut?: Date;
+      totalHours?: number;
+      regularHours?: number;
+      overtimeHours?: number;
+      breakStart?: Date;
+      breakEnd?: Date;
+    } = {
       location: location || undefined,
       ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
     }

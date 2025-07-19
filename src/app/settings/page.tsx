@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Building2, CreditCard, Bell, Shield, Mail, Send, Eye, EyeOff, Upload, X, Users, FileText, Settings } from 'lucide-react'
+import { Building2, Shield, Mail, Send, Eye, EyeOff, Upload, X, Users, FileText, Settings } from 'lucide-react'
 import { RoleGuard } from '@/components/ui/role-guard'
 
 interface Settings {

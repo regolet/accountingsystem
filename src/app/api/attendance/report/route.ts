@@ -17,7 +17,13 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const where: any = {
+    const where: {
+      date?: {
+        gte: Date;
+        lte: Date;
+      };
+      employeeId?: string;
+    } = {
       date: {
         gte: new Date(startDate),
         lte: new Date(endDate),

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { FileText, Receipt, Building2, Settings, User } from 'lucide-react'
+import { FileText, Receipt } from 'lucide-react'
 import { RoleGuard } from '@/components/ui/role-guard'
 import InvoicesSection from './invoices-section'
 import ReimbursementsSection from './reimbursements-section'
@@ -9,7 +9,7 @@ import ReimbursementsSection from './reimbursements-section'
 interface SidebarItem {
   id: string
   name: string
-  icon: any
+  icon: React.ComponentType<any>
   permission?: string
 }
 
@@ -58,7 +58,7 @@ export default function InvoicesPage() {
             
             if (item.permission) {
               return (
-                <RoleGuard key={item.id} permission={item.permission as any}>
+                <RoleGuard key={item.id} permission={item.permission as string}>
                   <button
                     onClick={() => setActiveSection(item.id)}
                     className={`w-full flex items-center px-3 py-2 mb-1 text-left rounded-lg transition-colors ${

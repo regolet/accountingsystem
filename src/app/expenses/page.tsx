@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RoleGuard } from '@/components/ui/role-guard'
-import { Plus, Search, Edit, Trash2, Eye, Calendar, Upload, Download, Filter } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Eye, Calendar } from 'lucide-react'
 
 interface Expense {
   id: string

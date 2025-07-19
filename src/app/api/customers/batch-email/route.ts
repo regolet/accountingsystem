@@ -22,7 +22,9 @@ export async function POST(request: NextRequest) {
     const { customerIds, emailType, includeOverdueOnly } = batchEmailSchema.parse(body)
 
     // Build customer filter
-    const customerFilter: any = {}
+    const customerFilter: {
+      id?: { in: string[] };
+    } = {}
     if (customerIds && customerIds.length > 0) {
       customerFilter.id = { in: customerIds }
     }

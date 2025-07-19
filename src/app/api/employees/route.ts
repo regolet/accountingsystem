@@ -43,7 +43,19 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    const where: any = {}
+    const where: {
+      OR?: {
+        firstName?: { contains: string; mode: 'insensitive' };
+        lastName?: { contains: string; mode: 'insensitive' };
+        email?: { contains: string; mode: 'insensitive' };
+        employeeId?: { contains: string; mode: 'insensitive' };
+        department?: { contains: string; mode: 'insensitive' };
+        position?: { contains: string; mode: 'insensitive' };
+      }[];
+      department?: string;
+      status?: string;
+      employmentType?: string;
+    } = {}
 
     if (search) {
       where.OR = [

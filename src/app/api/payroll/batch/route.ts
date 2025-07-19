@@ -36,7 +36,11 @@ export async function POST(request: NextRequest) {
     })
 
     // Get employees to process
-    const employeeFilter: any = {
+    const employeeFilter: {
+      status: string;
+      id?: { in: string[] };
+      department?: { in: string[] };
+    } = {
       status: 'ACTIVE',
     }
 

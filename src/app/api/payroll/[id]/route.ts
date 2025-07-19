@@ -74,7 +74,28 @@ export async function PUT(
       return NextResponse.json({ error: 'Payroll record not found' }, { status: 404 })
     }
 
-    const updateData: any = {}
+    const updateData: {
+      payDate?: Date | null;
+      status?: string;
+      notes?: string;
+      totalWorkDays?: number;
+      totalWorkHours?: number;
+      regularHours?: number;
+      overtimeHours?: number;
+      hourlyRate?: number;
+      regularPay?: number;
+      overtimePay?: number;
+      totalEarnings?: number;
+      totalDeductions?: number;
+      grossPay?: number;
+      netPay?: number;
+      taxableIncome?: number;
+      withholdingTax?: number;
+      earningsData?: any;
+      deductionsData?: any;
+      processedBy?: string;
+      processedAt?: Date;
+    } = {}
 
     // Basic fields
     if (payDate !== undefined) updateData.payDate = payDate ? new Date(payDate) : null

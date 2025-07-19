@@ -49,7 +49,11 @@ export default function AttendanceReportsPage() {
     return date.toISOString().split('T')[0]
   })
   const [loading, setLoading] = useState(false)
-  const [reportData, setReportData] = useState<any>(null)
+  const [reportData, setReportData] = useState<{
+    summary?: AttendanceSummary[];
+    attendances?: any[];
+    monthlyData?: MonthlyData[];
+  } | null>(null)
 
   useEffect(() => {
     fetchEmployees()
@@ -251,7 +255,15 @@ export default function AttendanceReportsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {reportData.attendances.map((attendance: any) => (
+                {reportData.attendances.map((attendance: {
+                  id: string;
+                  employee: Employee;
+                  date: string;
+                  clockIn?: string;
+                  clockOut?: string;
+                  totalHours?: number;
+                  status: string;
+                }) => (
                   <tr key={attendance.id} className="hover:bg-gray-50">
                     <td className="px-4 py-2 whitespace-nowrap">
                       <div>
@@ -377,7 +389,7 @@ export default function AttendanceReportsPage() {
               <select
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 value={reportType}
-                onChange={(e) => setReportType(e.target.value as any)}
+                onChange={(e) => setReportType(e.target.value as 'summary' | 'detailed' | 'monthly')}
               >
                 <option value="summary">Summary</option>
                 <option value="detailed">Detailed</option>

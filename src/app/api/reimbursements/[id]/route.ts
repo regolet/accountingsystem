@@ -51,10 +51,10 @@ export async function GET(
     }
 
     return NextResponse.json({ reimbursement })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching reimbursement:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch reimbursement' },
+      { error: (error as Error).message || 'Failed to fetch reimbursement' },
       { status: 500 }
     )
   }
@@ -96,7 +96,27 @@ export async function PUT(
       return NextResponse.json({ error: 'Reimbursement not found' }, { status: 404 })
     }
 
-    const updateData: any = {}
+    const updateData: {
+      title?: string;
+      description?: string;
+      dueDate?: Date | null;
+      status?: string;
+      approvedBy?: string;
+      subtotal?: number;
+      total?: number;
+      tax?: number;
+      items?: {
+        create: {
+          expenseId?: string | null;
+          description: string;
+          amount: number;
+          date: Date;
+          category: string;
+          receipt?: string | null;
+          notes?: string | null;
+        }[];
+      };
+    } = {}
 
     if (title !== undefined) updateData.title = title
     if (description !== undefined) updateData.description = description
@@ -112,7 +132,7 @@ export async function PUT(
     // Update items if provided
     if (items !== undefined) {
       // Calculate new totals
-      const subtotal = items.reduce((sum: number, item: any) => sum + parseFloat(item.amount), 0)
+      const subtotal = items.reduce((sum: number, item: { amount: string | number }) => sum + parseFloat(String(item.amount)), 0)
       const taxAmount = tax !== undefined ? parseFloat(tax) : existingReimbursement.tax
       const total = subtotal + taxAmount
 
@@ -126,7 +146,15 @@ export async function PUT(
       })
 
       updateData.items = {
-        create: items.map((item: any) => ({
+        create: items.map((item: {
+          expenseId?: string;
+          description: string;
+          amount: string | number;
+          date: string;
+          category: string;
+          receipt?: string;
+          notes?: string;
+        }) => ({
           expenseId: item.expenseId || null,
           description: item.description,
           amount: parseFloat(item.amount),
@@ -169,10 +197,10 @@ export async function PUT(
     })
 
     return NextResponse.json({ reimbursement })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating reimbursement:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to update reimbursement' },
+      { error: (error as Error).message || 'Failed to update reimbursement' },
       { status: 500 }
     )
   }
@@ -208,10 +236,10 @@ export async function DELETE(
     })
 
     return NextResponse.json({ message: 'Reimbursement deleted successfully' })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting reimbursement:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to delete reimbursement' },
+      { error: (error as Error).message || 'Failed to delete reimbursement' },
       { status: 500 }
     )
   }

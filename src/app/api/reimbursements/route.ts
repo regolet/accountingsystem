@@ -25,7 +25,14 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
 
-    const where: any = {}
+    const where: {
+      customerId?: string;
+      status?: string;
+      issueDate?: {
+        gte?: Date;
+        lte?: Date;
+      };
+    } = {}
 
     if (customerId) {
       where.customerId = customerId
@@ -98,10 +105,10 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil(total / limit)
       }
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching reimbursements:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch reimbursements' },
+      { error: (error as Error).message || 'Failed to fetch reimbursements' },
       { status: 500 }
     )
   }
@@ -143,7 +150,7 @@ export async function POST(request: NextRequest) {
     const reimbursementNumber = `REIMB-${String(count + 1).padStart(4, '0')}`
 
     // Calculate totals
-    const subtotal = items.reduce((sum: number, item: any) => sum + parseFloat(item.amount), 0)
+    const subtotal = items.reduce((sum: number, item: { amount: string | number }) => sum + parseFloat(String(item.amount)), 0)
     const total = subtotal + parseFloat(tax)
 
     const reimbursement = await prisma.reimbursement.create({
@@ -158,7 +165,15 @@ export async function POST(request: NextRequest) {
         total,
         createdBy: session.user.id,
         items: {
-          create: items.map((item: any) => ({
+          create: items.map((item: {
+            expenseId?: string;
+            description: string;
+            amount: string | number;
+            date: string;
+            category: string;
+            receipt?: string;
+            notes?: string;
+          }) => ({
             expenseId: item.expenseId || null,
             description: item.description,
             amount: parseFloat(item.amount),
@@ -187,10 +202,10 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({ reimbursement }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating reimbursement:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to create reimbursement' },
+      { error: (error as Error).message || 'Failed to create reimbursement' },
       { status: 500 }
     )
   }

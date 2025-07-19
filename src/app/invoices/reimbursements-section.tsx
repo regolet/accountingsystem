@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RoleGuard } from '@/components/ui/role-guard'
-import { Plus, Receipt, Calendar, Search, Check, X, Eye, Edit, Trash2, Filter } from 'lucide-react'
+import { Plus, Receipt, Search, Check, X, Eye, Edit, Trash2, Filter } from 'lucide-react'
 
 interface Reimbursement {
   id: string
@@ -87,7 +87,14 @@ export default function ReimbursementsSection() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [selectedExpenses, setSelectedExpenses] = useState<string[]>([])
-  const [customItems, setCustomItems] = useState<any[]>([])
+  const [customItems, setCustomItems] = useState<Array<{
+    description: string;
+    amount: number;
+    date: string;
+    category: string;
+    receipt: string;
+    notes: string;
+  }>>([])
   const [viewingReimbursement, setViewingReimbursement] = useState<Reimbursement | null>(null)
   const [showViewModal, setShowViewModal] = useState(false)
   const [editingReimbursement, setEditingReimbursement] = useState<Reimbursement | null>(null)
@@ -224,7 +231,7 @@ export default function ReimbursementsSection() {
     setCustomItems(customItems.filter((_, i) => i !== index))
   }
 
-  const updateCustomItem = (index: number, field: string, value: any) => {
+  const updateCustomItem = (index: number, field: string, value: string | number) => {
     const updated = [...customItems]
     updated[index] = { ...updated[index], [field]: value }
     setCustomItems(updated)

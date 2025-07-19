@@ -29,10 +29,10 @@ export async function GET(
     }
 
     return NextResponse.json({ expense })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching expense:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch expense' },
+      { error: (error as Error).message || 'Failed to fetch expense' },
       { status: 500 }
     )
   }
@@ -77,7 +77,19 @@ export async function PUT(
       return NextResponse.json({ error: 'Expense not found' }, { status: 404 })
     }
 
-    const updateData: any = {}
+    const updateData: {
+      title?: string;
+      description?: string;
+      amount?: number;
+      currency?: string;
+      category?: string;
+      date?: Date;
+      paymentMethod?: string;
+      vendor?: string;
+      receipt?: string;
+      status?: string;
+      approvedBy?: string;
+    } = {}
 
     if (title !== undefined) updateData.title = title
     if (description !== undefined) updateData.description = description
@@ -102,10 +114,10 @@ export async function PUT(
     })
 
     return NextResponse.json({ expense })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating expense:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to update expense' },
+      { error: (error as Error).message || 'Failed to update expense' },
       { status: 500 }
     )
   }
@@ -141,10 +153,10 @@ export async function DELETE(
     })
 
     return NextResponse.json({ message: 'Expense deleted successfully' })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting expense:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to delete expense' },
+      { error: (error as Error).message || 'Failed to delete expense' },
       { status: 500 }
     )
   }

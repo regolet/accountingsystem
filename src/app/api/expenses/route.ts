@@ -25,7 +25,14 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
 
-    const where: any = {}
+    const where: {
+      category?: string;
+      status?: string;
+      date?: {
+        gte?: Date;
+        lte?: Date;
+      };
+    } = {}
 
     if (category) {
       where.category = category
@@ -71,10 +78,10 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil(total / limit)
       }
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching expenses:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch expenses' },
+      { error: (error as Error).message || 'Failed to fetch expenses' },
       { status: 500 }
     )
   }
@@ -132,10 +139,10 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({ expense }, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating expense:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to create expense' },
+      { error: (error as Error).message || 'Failed to create expense' },
       { status: 500 }
     )
   }

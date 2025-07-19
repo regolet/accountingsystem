@@ -101,7 +101,14 @@ export async function PUT(
     const validatedData = emailSettingsSchema.parse(body)
 
     // Prepare update data
-    const updateData: any = {}
+    const updateData: {
+      smtpHost?: string;
+      smtpPort?: number;
+      smtpUser?: string;
+      smtpFromName?: string;
+      smtpEnabled?: boolean;
+      smtpPass?: string;
+    } = {}
 
     if (validatedData.smtpHost !== undefined) {
       updateData.smtpHost = validatedData.smtpHost
@@ -252,7 +259,7 @@ export async function POST(
     } catch (emailError) {
       console.error('Test email error:', emailError)
       return NextResponse.json({ 
-        error: `Email test failed: ${emailError.message}. Please check your Gmail app password and SMTP settings.`,
+        error: `Email test failed: ${(emailError as Error).message}. Please check your Gmail app password and SMTP settings.`,
         code: 'EMAIL_TEST_ERROR'
       }, { status: 400 })
     }

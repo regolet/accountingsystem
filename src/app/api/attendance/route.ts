@@ -11,7 +11,14 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
 
-    const where: any = {}
+    const where: {
+      employeeId?: string;
+      date?: {
+        gte?: Date;
+        lte?: Date;
+      };
+      status?: string;
+    } = {}
     
     if (employeeId) {
       where.employeeId = employeeId
