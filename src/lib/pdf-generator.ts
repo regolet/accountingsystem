@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer'
+import puppeteer, { Browser } from 'puppeteer'
 import { prisma } from './prisma'
 import { Prisma } from '@prisma/client'
 
@@ -34,9 +34,12 @@ interface Settings {
   companyPhone: string | null;
   companyAddress: string | null;
   companyTaxId: string | null;
+  companyLogo: string | null;
 }
 
 export async function generateInvoicePDF(invoiceId: string): Promise<Buffer> {
+  let browser: Browser | null = null
+  
   try {
     // Get invoice data
     const invoice = await prisma.invoice.findUnique({
@@ -57,26 +60,25 @@ export async function generateInvoicePDF(invoiceId: string): Promise<Buffer> {
     // Generate HTML content
     const html = generateInvoiceHTML(invoice as InvoiceWithRelations, settings)
 
-  // Launch puppeteer browser with Windows-compatible settings
-  const browser = await puppeteer.launch({
-    headless: true,  // Use headless mode
-    args: [
-      '--no-sandbox', 
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--no-first-run',
-      '--no-zygote',
-      '--disable-gpu',
-      '--disable-web-security',
-      '--disable-features=IsolateOrigins,site-per-process'
-    ],
-    executablePath: process.platform === 'win32' 
-      ? undefined  // Let Puppeteer find Chrome on Windows
-      : puppeteer.executablePath()
-  })
+    // Launch puppeteer browser with Windows-compatible settings
+    browser = await puppeteer.launch({
+      headless: true,  // Use headless mode
+      args: [
+        '--no-sandbox', 
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--disable-gpu',
+        '--disable-web-security',
+        '--disable-features=IsolateOrigins,site-per-process'
+      ],
+      executablePath: process.platform === 'win32' 
+        ? undefined  // Let Puppeteer find Chrome on Windows
+        : puppeteer.executablePath()
+    })
 
-  try {
     const page = await browser.newPage()
     
     // Set content and wait for load
@@ -96,18 +98,19 @@ export async function generateInvoicePDF(invoiceId: string): Promise<Buffer> {
     })
 
     return Buffer.from(pdfBuffer)
-  } finally {
-    await browser.close()
-  }
   } catch (error) {
     console.error('PDF Generation Error:', error)
     
     // If Puppeteer fails, try a simpler approach
-    if (error.message?.includes('Failed to launch') || error.message?.includes('spawn')) {
+    if (error instanceof Error && (error.message?.includes('Failed to launch') || error.message?.includes('spawn'))) {
       throw new Error('PDF generation failed. Please ensure Chrome or Chromium is installed on your system.')
     }
     
     throw error
+  } finally {
+    if (browser) {
+      await browser.close()
+    }
   }
 }
 
@@ -130,7 +133,7 @@ function generateInvoiceHTML(invoice: InvoiceWithRelations, settings: Settings |
     
     if (!address) return ''
     
-    const parts = []
+    const parts: string[] = []
     if (address.street) parts.push(address.street)
     if (address.city) parts.push(address.city)
     if (address.state) parts.push(address.state)
@@ -307,11 +310,27 @@ function generateInvoiceHTML(invoice: InvoiceWithRelations, settings: Settings |
     <body>
       <div class="header">
         <div class="company-info">
+          ${settings?.companyLogo ? `
+            <img 
+              src="${settings.companyLogo}" 
+              alt="${settings.companyName || 'Company'} Logo" 
+              style="width: 96px; height: 96px; object-fit: contain; margin-bottom: 10px;"
+            />
+          ` : `
+            <div class="logo-placeholder">
+              <!-- Logo placeholder 1x1 inch (96px at 96dpi) -->
+              <div style="width: 96px; height: 96px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; font-size: 9px; color: #999;">
+                LOGO
+              </div>
+            </div>
+          `}
           <h2>${settings?.companyName || 'Your Company'}</h2>
+          <!-- Company details commented out
           <p>${settings?.companyEmail || 'contact@company.com'}</p>
           ${settings?.companyPhone ? `<p>${settings.companyPhone}</p>` : ''}
           ${settings?.companyAddress ? `<p>${settings.companyAddress}</p>` : ''}
           ${settings?.companyTaxId ? `<p>Tax ID: ${settings.companyTaxId}</p>` : ''}
+          -->
         </div>
         <div class="invoice-info">
           <h1>INVOICE</h1>

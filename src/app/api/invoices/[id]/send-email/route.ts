@@ -15,6 +15,35 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Check if user has email enabled and configured
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        smtpEnabled: true,
+        smtpHost: true,
+        smtpUser: true,
+        smtpPass: true,
+      }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    if (!user.smtpEnabled) {
+      return NextResponse.json({ 
+        error: 'Email sending is not enabled. Please enable email sending in your account settings.',
+        code: 'EMAIL_NOT_ENABLED'
+      }, { status: 400 })
+    }
+
+    if (!user.smtpUser || !user.smtpPass || !user.smtpHost) {
+      return NextResponse.json({ 
+        error: 'Email settings are incomplete. Please configure your SMTP settings in account settings.',
+        code: 'EMAIL_NOT_CONFIGURED'
+      }, { status: 400 })
+    }
+
     const { id } = params
 
     // Get invoice with customer details
@@ -101,7 +130,10 @@ export async function POST(
         recipient: invoice.customer.email 
       })
     } else {
-      return NextResponse.json({ error: 'Failed to send email' }, { status: 500 })
+      return NextResponse.json({ 
+        error: 'Failed to send email. Please check your email settings and try again. Common issues: incorrect Gmail app password, invalid SMTP settings, or recipient email address.',
+        code: 'EMAIL_SEND_FAILED'
+      }, { status: 500 })
     }
   } catch (error) {
     console.error('Send invoice email error:', error)

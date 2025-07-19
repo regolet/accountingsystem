@@ -241,6 +241,7 @@ model Settings {
   companyEmail          String   @default("admin@company.com")
   companyPhone          String?
   companyAddress        String?
+  companyLogo           String?  @db.Text // Base64 encoded image data
   defaultPaymentTerms   String   @default("Net 30")
   defaultCurrency       String   @default("PHP")
   defaultTaxRate        Decimal  @db.Decimal(5, 2) @default(12.0)

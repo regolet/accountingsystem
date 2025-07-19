@@ -218,11 +218,21 @@ export default function InvoiceDetailsPage() {
         }
       } else {
         const errorData = await response.json()
-        alert(`Failed to send email: ${errorData.error}`)
+        
+        // Handle specific error codes with helpful messages
+        if (errorData.code === 'EMAIL_NOT_ENABLED') {
+          alert('❌ Email sending is not enabled.\n\nPlease go to Settings → Gmail SMTP Settings and enable email sending for your account.')
+        } else if (errorData.code === 'EMAIL_NOT_CONFIGURED') {
+          alert('⚙️ Email settings are incomplete.\n\nPlease go to Settings → Gmail SMTP Settings and configure your Gmail email and app password.')
+        } else if (errorData.code === 'EMAIL_SEND_FAILED') {
+          alert('📧 Failed to send email.\n\nCommon issues:\n• Incorrect Gmail app password\n• Invalid SMTP settings\n• Recipient email blocked\n\nPlease check your email settings and try again.')
+        } else {
+          alert(`Failed to send email: ${errorData.error}`)
+        }
       }
     } catch (error) {
       console.error('Email sending error:', error)
-      alert('Failed to send email. Please try again.')
+      alert('❌ Failed to send invoice email due to network error. Please try again.')
     } finally {
       setSendingEmail(false)
     }

@@ -202,13 +202,15 @@ export async function POST(
 
     if (!user.smtpEnabled) {
       return NextResponse.json({ 
-        error: 'Email sending is not enabled for this account' 
+        error: 'Email sending is not enabled. Please enable email sending in your account settings first.',
+        code: 'EMAIL_NOT_ENABLED'
       }, { status: 400 })
     }
 
     if (!user.smtpUser || !user.smtpPass) {
       return NextResponse.json({ 
-        error: 'SMTP settings are incomplete. Please configure your email settings first.' 
+        error: 'Email settings are incomplete. Please configure your Gmail email and app password in account settings.',
+        code: 'EMAIL_NOT_CONFIGURED'
       }, { status: 400 })
     }
 
@@ -243,17 +245,22 @@ export async function POST(
         })
       } else {
         return NextResponse.json({ 
-          error: 'Failed to send test email. Please check your SMTP settings and credentials.' 
+          error: 'Failed to send test email. Common issues: incorrect Gmail app password, invalid SMTP settings, or email blocked by provider. Please verify your Gmail app password is correct.',
+          code: 'EMAIL_SEND_FAILED'
         }, { status: 400 })
       }
     } catch (emailError) {
       console.error('Test email error:', emailError)
       return NextResponse.json({ 
-        error: `Email sending failed: ${emailError.message}` 
+        error: `Email test failed: ${emailError.message}. Please check your Gmail app password and SMTP settings.`,
+        code: 'EMAIL_TEST_ERROR'
       }, { status: 400 })
     }
   } catch (error) {
     console.error('Error sending test email:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Email test failed due to server error. Please try again.',
+      code: 'SERVER_ERROR'
+    }, { status: 500 })
   }
 }

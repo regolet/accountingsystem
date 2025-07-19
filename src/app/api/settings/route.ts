@@ -9,6 +9,7 @@ const companyInfoSchema = z.object({
   email: z.string().email(),
   phone: z.string().optional(),
   address: z.string().optional(),
+  logo: z.string().nullable().optional(),
 })
 
 const invoiceSettingsSchema = z.object({
@@ -34,6 +35,7 @@ export async function GET() {
           email: 'admin@company.com',
           phone: '',
           address: '',
+          logo: null,
         },
         invoiceSettings: {
           defaultPaymentTerms: 'Net 30',
@@ -75,6 +77,7 @@ export async function GET() {
         email: settings.companyEmail,
         phone: settings.companyPhone || '',
         address: settings.companyAddress || '',
+        logo: settings.companyLogo || null,
       },
       invoiceSettings: {
         defaultPaymentTerms: settings.defaultPaymentTerms,
@@ -135,6 +138,7 @@ export async function PUT(request: NextRequest) {
           companyEmail: validatedData.email,
           companyPhone: validatedData.phone,
           companyAddress: validatedData.address,
+          companyLogo: validatedData.logo,
         }
       })
 
@@ -146,6 +150,7 @@ export async function PUT(request: NextRequest) {
           email: updatedSettings.companyEmail,
           phone: updatedSettings.companyPhone,
           address: updatedSettings.companyAddress,
+          logo: updatedSettings.companyLogo,
         }
       })
     }

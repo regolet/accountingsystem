@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Building2, CreditCard, Bell, Shield, Mail, Send, Eye, EyeOff } from 'lucide-react'
+import { Building2, CreditCard, Bell, Shield, Mail, Send, Eye, EyeOff, Upload, X } from 'lucide-react'
 import { RoleGuard } from '@/components/ui/role-guard'
 import { EmailPreview } from '@/components/ui/email-preview'
 
@@ -14,6 +14,7 @@ interface Settings {
     email: string
     phone: string
     address: string
+    logo: string | null
   }
   invoiceSettings: {
     defaultPaymentTerms: string
@@ -45,6 +46,7 @@ export default function SettingsPage() {
   const [emailLoading, setEmailLoading] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [testingEmail, setTestingEmail] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchSettings()
@@ -55,7 +57,13 @@ export default function SettingsPage() {
     try {
       const response = await fetch('/api/settings')
       const data = await response.json()
-      setSettings(data)
+      setSettings({
+        ...data,
+        companyInfo: {
+          ...data.companyInfo,
+          logo: data.companyInfo.logo || null
+        }
+      })
     } catch (error) {
       console.error('Error fetching settings:', error)
     } finally {
@@ -176,15 +184,25 @@ export default function SettingsPage() {
         
         if (testResponse.ok) {
           const result = await testResponse.json()
-          alert(`Test email sent successfully to ${result.recipient}`)
+          alert(`✅ Test email sent successfully to ${result.recipient}`)
         } else {
           const errorData = await testResponse.json()
-          alert(`Failed to send test email: ${errorData.error}`)
+          
+          // Handle specific error codes with helpful messages
+          if (errorData.code === 'EMAIL_NOT_ENABLED') {
+            alert('❌ Email sending is not enabled.\n\nPlease enable email sending by checking the checkbox above.')
+          } else if (errorData.code === 'EMAIL_NOT_CONFIGURED') {
+            alert('⚙️ Email settings are incomplete.\n\nPlease configure your Gmail email and app password.')
+          } else if (errorData.code === 'EMAIL_SEND_FAILED' || errorData.code === 'EMAIL_TEST_ERROR') {
+            alert('📧 Test email failed.\n\nCommon issues:\n• Incorrect Gmail app password\n• Invalid SMTP settings\n• Gmail security blocking\n\nPlease verify your Gmail app password is correct.')
+          } else {
+            alert(`Failed to send test email: ${errorData.error}`)
+          }
         }
       }
     } catch (error) {
       console.error('Error testing email settings:', error)
-      alert('Failed to send test email')
+      alert('❌ Failed to send test email due to network error. Please try again.')
     } finally {
       setTestingEmail(false)
     }
@@ -193,6 +211,43 @@ export default function SettingsPage() {
   const handleEmailSettingsSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     updateEmailSettings()
+  }
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Check file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Logo file size must be less than 2MB')
+      return
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const base64String = reader.result as string
+      setSettings(prev => prev ? {
+        ...prev,
+        companyInfo: { ...prev.companyInfo, logo: base64String }
+      } : null)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const removeLogo = () => {
+    setSettings(prev => prev ? {
+      ...prev,
+      companyInfo: { ...prev.companyInfo, logo: null }
+    } : null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   }
 
 
@@ -235,6 +290,50 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleCompanyInfoSubmit} className="space-y-4">
+              {/* Logo Upload Section */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">Company Logo</label>
+                <div className="flex items-center space-x-4">
+                  {settings.companyInfo.logo ? (
+                    <div className="relative">
+                      <img 
+                        src={settings.companyInfo.logo} 
+                        alt="Company Logo" 
+                        className="h-24 w-24 object-contain border rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={removeLogo}
+                        className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="h-24 w-24 border-2 border-dashed rounded flex items-center justify-center">
+                      <Upload className="h-8 w-8 text-gray-400" />
+                    </div>
+                  )}
+                  <div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {settings.companyInfo.logo ? 'Change Logo' : 'Upload Logo'}
+                    </Button>
+                    <p className="text-xs text-gray-500 mt-1">Max size: 2MB. PNG, JPG, GIF</p>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Company Name</label>
