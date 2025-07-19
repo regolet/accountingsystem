@@ -77,7 +77,7 @@ export default function ReimbursementsSection() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
-  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showExpenseModal, setShowExpenseModal] = useState(false)
   const [expenseFilters, setExpenseFilters] = useState({
@@ -272,7 +272,7 @@ export default function ReimbursementsSection() {
       if (response.ok) {
         const action = editingReimbursement ? 'updated' : 'created'
         showNotification('success', `Reimbursement ${action} successfully!`)
-        setShowCreateForm(false)
+        setShowCreateModal(false)
         setShowEditModal(false)
         setEditingReimbursement(null)
         resetForm()
@@ -397,7 +397,7 @@ export default function ReimbursementsSection() {
   }
 
   const cancelEdit = () => {
-    setShowCreateForm(false)
+    setShowCreateModal(false)
     setShowEditModal(false)
     setEditingReimbursement(null)
     resetForm()
@@ -453,206 +453,13 @@ export default function ReimbursementsSection() {
           <p className="text-gray-600">Bill customers for approved expenses</p>
         </div>
         <RoleGuard permission="createReimbursements">
-          <Button onClick={() => setShowCreateForm(true)}>
+          <Button onClick={() => setShowCreateModal(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Create Reimbursement
           </Button>
         </RoleGuard>
       </div>
 
-      {showCreateForm && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>
-              {editingReimbursement ? 'Edit Reimbursement' : 'Create New Reimbursement'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Customer *</label>
-                  <select
-                    required
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    value={formData.customerId}
-                    onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
-                  >
-                    <option value="">Select a customer</option>
-                    {customers.map(customer => (
-                      <option key={customer.id} value={customer.id}>
-                        {customer.name} ({customer.email})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Title *</label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="e.g., Business Travel Expenses"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  rows={3}
-                  placeholder="Additional details about this reimbursement"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Due Date</label>
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    value={formData.dueDate}
-                    onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Tax Amount</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    value={formData.tax}
-                    onChange={(e) => setFormData({ ...formData, tax: parseFloat(e.target.value) || 0 })}
-                  />
-                </div>
-              </div>
-
-              {/* Expense Selection */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <label className="block text-sm font-medium">Select Approved Expenses</label>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={openExpenseModal}
-                  >
-                    <Filter className="h-4 w-4 mr-2" />
-                    Select Expenses ({selectedExpenses.length} selected)
-                  </Button>
-                </div>
-                
-                {selectedExpenses.length > 0 && (
-                  <div className="border rounded-md p-3 bg-gray-50">
-                    <div className="text-sm text-gray-600 mb-2">
-                      Selected {selectedExpenses.length} expense{selectedExpenses.length !== 1 ? 's' : ''}
-                    </div>
-                    <div className="space-y-1">
-                      {expenses
-                        .filter(expense => selectedExpenses.includes(expense.id))
-                        .map((expense) => (
-                          <div key={expense.id} className="flex justify-between text-sm">
-                            <span>{expense.title}</span>
-                            <span className="font-medium">{formatCurrency(expense.amount)}</span>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Custom Items */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <label className="block text-sm font-medium">Additional Items</label>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={addCustomItem}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Custom Item
-                  </Button>
-                </div>
-                
-                {customItems.map((item, index) => (
-                  <div key={index} className="border rounded-md p-4 mb-3">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-                      <input
-                        type="text"
-                        placeholder="Description"
-                        className="px-3 py-2 border rounded-md"
-                        value={item.description}
-                        onChange={(e) => updateCustomItem(index, 'description', e.target.value)}
-                      />
-                      <input
-                        type="number"
-                        step="0.01"
-                        placeholder="Amount"
-                        className="px-3 py-2 border rounded-md"
-                        value={item.amount}
-                        onChange={(e) => updateCustomItem(index, 'amount', parseFloat(e.target.value) || 0)}
-                      />
-                      <input
-                        type="date"
-                        className="px-3 py-2 border rounded-md"
-                        value={item.date}
-                        onChange={(e) => updateCustomItem(index, 'date', e.target.value)}
-                      />
-                      <input
-                        type="text"
-                        placeholder="Category"
-                        className="px-3 py-2 border rounded-md"
-                        value={item.category}
-                        onChange={(e) => updateCustomItem(index, 'category', e.target.value)}
-                      />
-                    </div>
-                    <div className="flex gap-3">
-                      <input
-                        type="text"
-                        placeholder="Receipt/Reference"
-                        className="flex-1 px-3 py-2 border rounded-md"
-                        value={item.receipt}
-                        onChange={(e) => updateCustomItem(index, 'receipt', e.target.value)}
-                      />
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => removeCustomItem(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex gap-2 pt-4">
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      {editingReimbursement ? 'Updating...' : 'Creating...'}
-                    </div>
-                  ) : (
-                    editingReimbursement ? 'Update Reimbursement' : 'Create Reimbursement'
-                  )}
-                </Button>
-                <Button type="button" variant="secondary" onClick={cancelEdit} disabled={isSubmitting}>
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Filters */}
       <div className="mb-6 flex gap-4">
@@ -1266,6 +1073,205 @@ export default function ReimbursementsSection() {
                       </div>
                     ) : (
                       'Update Reimbursement'
+                    )}
+                  </Button>
+                  <Button type="button" variant="secondary" onClick={cancelEdit} disabled={isSubmitting}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold">Create Reimbursement</h2>
+                <Button variant="ghost" size="sm" onClick={() => setShowCreateModal(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Customer *</label>
+                    <select
+                      required
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      value={formData.customerId}
+                      onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
+                    >
+                      <option value="">Select a customer</option>
+                      {customers.map(customer => (
+                        <option key={customer.id} value={customer.id}>
+                          {customer.name} ({customer.email})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Title *</label>
+                    <input
+                      type="text"
+                      required
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      placeholder="e.g., Business Travel Expenses"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Description</label>
+                  <textarea
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    rows={3}
+                    placeholder="Additional details about this reimbursement"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Due Date</label>
+                    <input
+                      type="date"
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      value={formData.dueDate}
+                      onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Tax Amount</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      value={formData.tax}
+                      onChange={(e) => setFormData({ ...formData, tax: parseFloat(e.target.value) || 0 })}
+                    />
+                  </div>
+                </div>
+
+                {/* Expense Selection */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium">Select Approved Expenses</label>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={openExpenseModal}
+                    >
+                      <Filter className="h-4 w-4 mr-2" />
+                      Select Expenses ({selectedExpenses.length} selected)
+                    </Button>
+                  </div>
+                  
+                  {selectedExpenses.length > 0 && (
+                    <div className="border rounded-md p-3 bg-gray-50">
+                      <div className="text-sm text-gray-600 mb-2">
+                        Selected {selectedExpenses.length} expense{selectedExpenses.length !== 1 ? 's' : ''}
+                      </div>
+                      <div className="space-y-1">
+                        {expenses
+                          .filter(expense => selectedExpenses.includes(expense.id))
+                          .map((expense) => (
+                            <div key={expense.id} className="flex justify-between text-sm">
+                              <span>{expense.title}</span>
+                              <span className="font-medium">{formatCurrency(expense.amount)}</span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Custom Items */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium">Additional Items</label>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={addCustomItem}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Custom Item
+                    </Button>
+                  </div>
+                  
+                  {customItems.map((item, index) => (
+                    <div key={index} className="border rounded-md p-4 mb-3">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+                        <input
+                          type="text"
+                          placeholder="Description"
+                          className="px-3 py-2 border rounded-md"
+                          value={item.description}
+                          onChange={(e) => updateCustomItem(index, 'description', e.target.value)}
+                        />
+                        <input
+                          type="number"
+                          step="0.01"
+                          placeholder="Amount"
+                          className="px-3 py-2 border rounded-md"
+                          value={item.amount}
+                          onChange={(e) => updateCustomItem(index, 'amount', parseFloat(e.target.value) || 0)}
+                        />
+                        <input
+                          type="date"
+                          className="px-3 py-2 border rounded-md"
+                          value={item.date}
+                          onChange={(e) => updateCustomItem(index, 'date', e.target.value)}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Category"
+                          className="px-3 py-2 border rounded-md"
+                          value={item.category}
+                          onChange={(e) => updateCustomItem(index, 'category', e.target.value)}
+                        />
+                      </div>
+                      <div className="flex gap-3">
+                        <input
+                          type="text"
+                          placeholder="Receipt/Reference"
+                          className="flex-1 px-3 py-2 border rounded-md"
+                          value={item.receipt}
+                          onChange={(e) => updateCustomItem(index, 'receipt', e.target.value)}
+                        />
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => removeCustomItem(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Creating...
+                      </div>
+                    ) : (
+                      'Create Reimbursement'
                     )}
                   </Button>
                   <Button type="button" variant="secondary" onClick={cancelEdit} disabled={isSubmitting}>
