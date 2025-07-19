@@ -176,7 +176,7 @@ export default function ClockWidget({
         buttons.push(
           <Button 
             key="break-start"
-            variant="outline" 
+            variant="secondary" 
             onClick={() => handleClockAction('break_start')} 
             disabled={loading}
           >
@@ -187,7 +187,7 @@ export default function ClockWidget({
         buttons.push(
           <Button 
             key="break-end"
-            variant="outline" 
+            variant="secondary" 
             onClick={() => handleClockAction('break_end')} 
             disabled={loading}
           >

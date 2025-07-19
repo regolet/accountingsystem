@@ -89,8 +89,8 @@ export default function EmployeesPage() {
     hireDate: '',
     department: '',
     position: '',
-    employmentType: 'FULL_TIME' as const,
-    status: 'ACTIVE' as const,
+    employmentType: 'FULL_TIME' as 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERN' | 'CONSULTANT',
+    status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE' | 'TERMINATED' | 'ON_LEAVE',
     baseSalary: '',
     currency: 'PHP',
     address: {
@@ -1764,13 +1764,13 @@ export default function EmployeesPage() {
                                     {payslip.payDate ? new Date(payslip.payDate).toLocaleDateString() : 'Not set'}
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    ₱{parseFloat(payslip.grossPay || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                    ₱{parseFloat(payslip.grossPay || '0').toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                                    ₱{parseFloat(payslip.totalDeductions || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                    ₱{parseFloat(payslip.totalDeductions || '0').toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-green-600">
-                                    ₱{parseFloat(payslip.netPay || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                    ₱{parseFloat(payslip.netPay || '0').toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap">
                                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${

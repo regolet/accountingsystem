@@ -228,7 +228,7 @@ export default function EarningsPage() {
 
   const getUniqueTypes = () => {
     const types = earnings.map(earning => earning.type)
-    return [...new Set(types)].sort()
+    return Array.from(new Set(types)).sort()
   }
 
   if (loading) {

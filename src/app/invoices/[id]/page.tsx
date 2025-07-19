@@ -211,7 +211,7 @@ export default function InvoiceDetailsPage() {
         alert(`Invoice email sent successfully to ${result.recipient}`)
         
         // Also update status to SENT if not already
-        if (invoice.status === 'PENDING') {
+        if (invoice.status === 'DRAFT') {
           await updateStatus('SENT')
         }
       } else {

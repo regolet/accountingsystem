@@ -120,7 +120,10 @@ export default function SettingsPage() {
   const handleCompanyInfoSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!settings) return
-    updateSettings('companyInfo', settings.companyInfo)
+    updateSettings('companyInfo', {
+      ...settings.companyInfo,
+      logo: settings.companyInfo.logo || ''
+    })
   }
 
   const handleInvoiceSettingsSubmit = (e: React.FormEvent) => {
@@ -376,7 +379,7 @@ export default function SettingsPage() {
                 <div className="flex space-x-2">
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <Upload className="h-4 w-4 mr-2" />
@@ -384,7 +387,7 @@ export default function SettingsPage() {
                   </Button>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     onClick={removeLogo}
                     className="text-red-600 hover:text-red-700"
                   >
@@ -396,7 +399,7 @@ export default function SettingsPage() {
             ) : (
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Upload className="h-4 w-4 mr-2" />
@@ -835,7 +838,7 @@ export default function SettingsPage() {
               </RoleGuard>
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 onClick={testEmailSettings}
                 disabled={testingEmail || !emailSettings?.smtpEnabled}
               >
@@ -938,7 +941,7 @@ export default function SettingsPage() {
               const isActive = activeSection === item.id
               
               return (
-                <RoleGuard key={item.id} permission={item.permission || 'viewSettings'}>
+                <RoleGuard key={item.id} permission={(item.permission || 'viewSettings') as 'editSettings' | 'viewSettings'}>
                   <button
                     onClick={() => setActiveSection(item.id)}
                     className={`w-full flex items-center px-3 py-2 mb-1 text-left rounded-lg transition-colors ${

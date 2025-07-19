@@ -446,8 +446,8 @@ export default function PayrollPage() {
           onClose={() => {
             setShowDetailsModal(false)
             setSelectedBatch(null)
+            fetchBatches()
           }}
-          onUpdate={() => fetchBatches()}
         />
       )}
     </RoleGuard>
@@ -470,7 +470,7 @@ function CreatePayrollPeriodModal({ employees, onClose, onSuccess }: {
   })
   const [processing, setProcessing] = useState(false)
 
-  const departments = [...new Set(employees.map(e => e.department).filter(Boolean))]
+  const departments = Array.from(new Set(employees.map(e => e.department).filter(Boolean)))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -878,7 +878,7 @@ function EditPayrollPeriodModal({ batch, onClose, onSuccess }: {
   const [formData, setFormData] = useState({
     batchName: batch.batchName,
     payDate: batch.payDate ? batch.payDate.split('T')[0] : '',
-    status: batch.status
+    status: batch.status as 'DRAFT' | 'PROCESSING' | 'CALCULATED' | 'APPROVED' | 'PAID' | 'CANCELLED'
   })
   const [processing, setProcessing] = useState(false)
 
@@ -949,7 +949,7 @@ function EditPayrollPeriodModal({ batch, onClose, onSuccess }: {
             <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
             <select
               value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as 'DRAFT' | 'PROCESSING' | 'CALCULATED' | 'APPROVED' | 'COMPLETED' | 'CANCELLED' })}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as 'DRAFT' | 'PROCESSING' | 'CALCULATED' | 'APPROVED' | 'PAID' | 'CANCELLED' })}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="DRAFT">Draft</option>
@@ -957,6 +957,7 @@ function EditPayrollPeriodModal({ batch, onClose, onSuccess }: {
               <option value="CALCULATED">Calculated</option>
               <option value="APPROVED">Approved</option>
               <option value="PAID">Paid</option>
+              <option value="CANCELLED">Cancelled</option>
             </select>
           </div>
 

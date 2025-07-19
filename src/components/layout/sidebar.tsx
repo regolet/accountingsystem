@@ -22,7 +22,8 @@ import {
   DollarSign,
   BarChart3,
   TrendingDown,
-  Receipt
+  Receipt,
+  LucideIcon
 } from 'lucide-react'
 import { hasGranularPermission } from '@/lib/permissions'
 
@@ -201,17 +202,17 @@ export function Sidebar() {
       return { ...item, children: filteredChildren }
     }
     return hasGranularPermission(session?.user?.role || 'VIEWER', item.permission, session?.user?.customPermissions) ? item : null
-  }).filter(Boolean)
+  }).filter((item): item is typeof navigation[0] => item !== null)
   
   // Add Users tab for admins
   const navigationItems = isAdmin 
     ? [...filteredNavigation, { name: 'Users', href: '/users' as const, icon: Users, permission: 'viewUsers' as const }]
     : filteredNavigation
 
-  const renderNavItem = (item: typeof navigation[0]) => {
-    if (item.type === 'group') {
+  const renderNavItem = (item: typeof navigation[0] | { name: string; href: string; icon: LucideIcon; permission: string }) => {
+    if ('type' in item && item.type === 'group') {
       const isExpanded = expandedGroups.includes(item.name)
-      const hasActiveChild = item.type === 'group' && item.children?.some((child) => pathname === child.href)
+      const hasActiveChild = 'type' in item && item.type === 'group' && item.children?.some((child) => pathname === child.href)
       
       return (
         <div key={item.name}>
@@ -235,7 +236,7 @@ export function Sidebar() {
           </button>
           {isExpanded && (
             <div className="ml-4 mt-1 space-y-1">
-              {item.type === 'group' && item.children?.map((child) => {
+              {'type' in item && item.type === 'group' && item.children?.map((child) => {
                 const isActive = pathname === child.href
                 return (
                   <Link

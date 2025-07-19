@@ -231,7 +231,7 @@ export interface AttendanceSummary {
   attendanceRate: number
 }
 
-export function calculateAttendanceSummary(attendanceRecords: { status: string; totalHours?: number }[]): AttendanceSummary {
+export function calculateAttendanceSummary(attendanceRecords: { status: string; totalHours?: number; regularHours?: number; overtimeHours?: number }[]): AttendanceSummary {
   const totalDays = attendanceRecords.length
   const presentDays = attendanceRecords.filter(r => ['PRESENT', 'LATE'].includes(r.status)).length
   const absentDays = attendanceRecords.filter(r => r.status === 'ABSENT').length

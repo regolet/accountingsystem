@@ -280,7 +280,7 @@ export default function DeductionsPage() {
               
               if (item.permission) {
                 return (
-                  <RoleGuard key={item.id} permission={item.permission as any}>
+                  <RoleGuard key={item.id} permission={item.permission as 'editSettings'}>
                     <button
                       onClick={() => setActiveSection(item.id)}
                       className={`w-full flex items-center px-3 py-2 mb-1 text-left rounded-lg transition-colors ${

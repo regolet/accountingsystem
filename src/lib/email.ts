@@ -140,12 +140,13 @@ export const sendEmail = async (emailData: EmailTemplate, userId: string): Promi
     await transporter.sendMail(mailOptions)
     return true
   } catch (error) {
+    const emailError = error as { message?: string; code?: string; response?: unknown; responseCode?: number; command?: string }
     console.error('Failed to send email - detailed error:', {
-      message: error.message,
-      code: error.code,
-      response: error.response,
-      responseCode: error.responseCode,
-      command: error.command
+      message: error instanceof Error ? error.message : 'Unknown error',
+      code: emailError.code,
+      response: emailError.response,
+      responseCode: emailError.responseCode,
+      command: emailError.command
     })
     return false
   }
