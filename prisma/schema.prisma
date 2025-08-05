@@ -265,6 +265,14 @@ model Settings {
   // Reimbursement Email Templates
   reimbursementEmailSubject   String   @default("Reimbursement Request {reimbursementNumber} - {amount}")  @db.Text
   reimbursementEmailMessage   String   @default("Dear {customerName},\n\nWe hope this email finds you well. Please find attached your reimbursement request for approved expenses.\n\nReimbursement Details:\n• Reimbursement Number: {reimbursementNumber}\n• Total Amount: {amount}\n• Due Date: {dueDate}\n\nThe attached PDF contains a detailed breakdown of all reimbursed expenses. Please review the details and let us know if you have any questions.\n\nWe appreciate your business and look forward to continuing our partnership.\n\nBest regards,\n{companyName} Team")  @db.Text
+
+  // Global SMTP Settings (fallback when user doesn't have personal settings)
+  globalSmtpHost          String?   @default("smtp.gmail.com")
+  globalSmtpPort          Int?      @default(587)
+  globalSmtpUser          String?
+  globalSmtpPass          String?   @db.Text // Encrypted password
+  globalSmtpFromName      String?   @default("AccountingPro")
+  globalSmtpEnabled       Boolean   @default(false)
   
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt

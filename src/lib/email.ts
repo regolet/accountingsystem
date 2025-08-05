@@ -45,6 +45,39 @@ interface EmailTemplate {
   }>
 }
 
+// Get global email settings from database
+const getGlobalEmailSettings = async (): Promise<UserEmailSettings | null> => {
+  try {
+    const settings = await prisma.settings.findFirst({
+      select: {
+        globalSmtpHost: true,
+        globalSmtpPort: true,
+        globalSmtpUser: true,
+        globalSmtpPass: true,
+        globalSmtpFromName: true,
+        globalSmtpEnabled: true,
+      },
+    })
+
+    if (!settings || !settings.globalSmtpEnabled || !settings.globalSmtpUser || !settings.globalSmtpPass) {
+      return null
+    }
+
+    const decryptedPassword = simpleDecrypt(settings.globalSmtpPass)
+
+    return {
+      smtpHost: settings.globalSmtpHost || 'smtp.gmail.com',
+      smtpPort: settings.globalSmtpPort || 587,
+      smtpUser: settings.globalSmtpUser,
+      smtpPass: decryptedPassword,
+      smtpFromName: settings.globalSmtpFromName || 'AccountingPro',
+    }
+  } catch (error) {
+    console.error('Error fetching global email settings:', error)
+    return null
+  }
+}
+
 // Get user email settings from database
 const getUserEmailSettings = async (userId: string): Promise<UserEmailSettings | null> => {
   try {
@@ -79,27 +112,34 @@ const getUserEmailSettings = async (userId: string): Promise<UserEmailSettings |
   }
 }
 
-// Create transporter with user-specific database configuration (required)
+// Create transporter with database configuration (user settings or global fallback)
 const createEmailTransporter = async (userId?: string) => {
-  // Always require user-specific settings from database
-  if (!userId) {
-    throw new Error('User ID is required for email sending. Environment variables are no longer used.')
+  let emailSettings: UserEmailSettings | null = null
+
+  // Try user-specific settings first
+  if (userId) {
+    emailSettings = await getUserEmailSettings(userId)
   }
 
-  const userSettings = await getUserEmailSettings(userId)
-  if (!userSettings) {
-    throw new Error('Email settings not configured for this user. Please configure SMTP settings in your account.')
+  // Fall back to global settings if user settings not available
+  if (!emailSettings) {
+    emailSettings = await getGlobalEmailSettings()
+  }
+
+  // If no settings available at all, throw error
+  if (!emailSettings) {
+    throw new Error('No email settings configured. Please configure SMTP settings in your account or ask admin to configure global settings.')
   }
 
   const config: EmailConfig = {
-    host: userSettings.smtpHost,
-    port: userSettings.smtpPort,
+    host: emailSettings.smtpHost,
+    port: emailSettings.smtpPort,
     secure: false, // false for 587 with STARTTLS
     auth: {
-      user: userSettings.smtpUser,
-      pass: userSettings.smtpPass,
+      user: emailSettings.smtpUser,
+      pass: emailSettings.smtpPass,
     },
-    fromName: userSettings.smtpFromName,
+    fromName: emailSettings.smtpFromName,
   }
 
 
@@ -116,21 +156,27 @@ const createEmailTransporter = async (userId?: string) => {
   return transporter
 }
 
-// Send single email (requires user ID for database settings)
-export const sendEmail = async (emailData: EmailTemplate, userId: string): Promise<boolean> => {
+// Send single email (supports user settings with global fallback)
+export const sendEmail = async (emailData: EmailTemplate, userId?: string): Promise<boolean> => {
   try {
-    // Get user settings from database
-    const userSettings = await getUserEmailSettings(userId)
-    if (!userSettings) {
-      console.error('Email settings not configured for user:', userId)
-      return false
-    }
-
-
     const transporter = await createEmailTransporter(userId)
     
+    // Get email settings (user or global) for the from field
+    let emailSettings = null
+    if (userId) {
+      emailSettings = await getUserEmailSettings(userId)
+    }
+    if (!emailSettings) {
+      emailSettings = await getGlobalEmailSettings()
+    }
+    
+    if (!emailSettings) {
+      console.error('No email settings available')
+      return false
+    }
+    
     const mailOptions = {
-      from: `"${userSettings.smtpFromName}" <${userSettings.smtpUser}>`,
+      from: `"${emailSettings.smtpFromName}" <${emailSettings.smtpUser}>`,
       to: emailData.to,
       subject: emailData.subject,
       html: emailData.html,
@@ -152,11 +198,11 @@ export const sendEmail = async (emailData: EmailTemplate, userId: string): Promi
   }
 }
 
-// Send batch emails with delay to avoid rate limiting (requires user ID)
+// Send batch emails with delay to avoid rate limiting (supports global fallback)
 export const sendBatchEmails = async (
   emails: EmailTemplate[],
   delayMs: number = 1000,
-  userId: string
+  userId?: string
 ): Promise<{ sent: number; failed: number }> => {
   let sent = 0
   let failed = 0
