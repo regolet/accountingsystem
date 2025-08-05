@@ -24,12 +24,26 @@ export default function SignInPage() {
     setSuccess('')
     
     try {
-      const response = await fetch('/api/seed', {
+      // Try the enhanced seed endpoint first
+      let response = await fetch('/api/seed', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
       })
+      
+      // If it fails, try the simple seed endpoint as fallback
+      if (!response.ok) {
+        console.log('Enhanced seed failed, trying simple seed...')
+        setSuccess('Retrying with simplified approach...')
+        
+        response = await fetch('/api/seed-simple', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      }
       
       if (response.ok) {
         setError('')
@@ -64,7 +78,17 @@ export default function SignInPage() {
         }, 2000)
       } else {
         const errorData = await response.json()
-        setError(`Failed to create demo user: ${errorData.error}`)
+        console.error('Demo user creation failed:', errorData)
+        
+        let errorMessage = errorData.error || 'Unknown error'
+        if (errorData.details) {
+          errorMessage += `: ${errorData.details}`
+        }
+        if (errorData.debug) {
+          console.log('Debug info:', errorData.debug)
+        }
+        
+        setError(`Failed to create demo user: ${errorMessage}`)
       }
     } catch (error) {
       console.error('Seed error:', error)
