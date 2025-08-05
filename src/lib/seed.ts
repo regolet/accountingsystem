@@ -3,12 +3,24 @@ import bcrypt from 'bcryptjs'
 
 export async function createDemoUser() {
   let connectionAttempts = 0
-  const maxAttempts = 3
+  const maxAttempts = 5
+  const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME
+  
+  // Validate environment
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL environment variable is not set')
+  }
   
   while (connectionAttempts < maxAttempts) {
     try {
       connectionAttempts++
       console.log(`Demo user creation attempt ${connectionAttempts}/${maxAttempts}`)
+      
+      // For serverless, ensure Prisma is connected
+      if (isServerless) {
+        console.log('Serverless environment detected, ensuring database connection...')
+        await prisma.$connect()
+      }
       
       // Try to find existing user first
       let existingUser
@@ -26,13 +38,20 @@ export async function createDemoUser() {
         const errorMessage = findError instanceof Error ? findError.message : 'Unknown error'
         console.log(`Find user query failed (attempt ${connectionAttempts}):`, errorMessage)
         
-        // If it's a connection issue, try again
-        if (errorMessage.includes('prepared statement') || errorMessage.includes('42P05') || errorMessage.includes('connection')) {
-          if (connectionAttempts < maxAttempts) {
-            console.log('Connection issue detected, retrying...')
-            await new Promise(resolve => setTimeout(resolve, 1000 * connectionAttempts)) // Progressive delay
-            continue
-          }
+        // Enhanced error detection for various connection issues
+        const isConnectionError = errorMessage.includes('prepared statement') || 
+                                 errorMessage.includes('42P05') || 
+                                 errorMessage.includes('connection') ||
+                                 errorMessage.includes('timeout') ||
+                                 errorMessage.includes('ECONNRESET') ||
+                                 errorMessage.includes('ENOTFOUND') ||
+                                 errorMessage.includes('connect ETIMEDOUT')
+        
+        if (isConnectionError && connectionAttempts < maxAttempts) {
+          const delay = Math.min(1000 * Math.pow(2, connectionAttempts - 1), 5000) // Exponential backoff, max 5s
+          console.log(`Connection issue detected, retrying in ${delay}ms...`)
+          await new Promise(resolve => setTimeout(resolve, delay))
+          continue
         }
         existingUser = null
       }
@@ -57,31 +76,53 @@ export async function createDemoUser() {
       })
 
       console.log('Demo user created successfully:', user.email)
+      
+      // For serverless environments, disconnect after operation
+      if (isServerless) {
+        await prisma.$disconnect()
+      }
+      
       return user
       
     } catch (error) {
       console.error(`Error creating demo user (attempt ${connectionAttempts}):`, error)
       
-      // If it's a connection/prepared statement error and we have retries left, try again
+      // Enhanced error detection and handling
       const errorMessage = error instanceof Error ? error.message : ''
-      if ((errorMessage.includes('prepared statement') || errorMessage.includes('42P05') || errorMessage.includes('connection')) && connectionAttempts < maxAttempts) {
-        console.log(`Connection issue detected, retrying in ${connectionAttempts} seconds...`)
-        await new Promise(resolve => setTimeout(resolve, 1000 * connectionAttempts))
+      const isConnectionError = errorMessage.includes('prepared statement') || 
+                               errorMessage.includes('42P05') || 
+                               errorMessage.includes('connection') ||
+                               errorMessage.includes('timeout') ||
+                               errorMessage.includes('ECONNRESET') ||
+                               errorMessage.includes('ENOTFOUND') ||
+                               errorMessage.includes('connect ETIMEDOUT') ||
+                               errorMessage.includes('ECONNREFUSED')
+      
+      if (isConnectionError && connectionAttempts < maxAttempts) {
+        const delay = Math.min(1000 * Math.pow(2, connectionAttempts - 1), 5000) // Exponential backoff
+        console.log(`Connection issue detected, retrying in ${delay}ms...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
         continue
       }
       
-      // If we've exhausted retries or it's a different error, handle it
+      // If we've exhausted retries, provide detailed error information
       if (connectionAttempts >= maxAttempts) {
-        console.log('Max connection attempts reached, returning fallback user')
-        // Return a fallback user to allow the app to work
-        return {
-          id: 'demo-fallback-user',
-          email: 'admin@demo.com',
-          name: 'Demo Admin (Fallback)',
-          role: 'ADMIN'
-        }
+        console.error('Max connection attempts reached. Final error details:', {
+          message: errorMessage,
+          stack: error instanceof Error ? error.stack : 'No stack trace',
+          isConnectionError,
+          environment: {
+            DATABASE_URL: process.env.DATABASE_URL ? 'Set' : 'Not set',
+            VERCEL: process.env.VERCEL ? 'True' : 'False',
+            NODE_ENV: process.env.NODE_ENV
+          }
+        })
+        
+        // Throw a more descriptive error
+        throw new Error(`Failed to create demo user after ${maxAttempts} attempts. Last error: ${errorMessage}`)
       }
       
+      // For non-connection errors, throw immediately
       throw error
     }
   }

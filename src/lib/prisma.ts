@@ -13,6 +13,15 @@ export const prisma =
         url: process.env.DATABASE_URL,
       },
     },
+    // Enhanced configuration for serverless environments
+    ...(process.env.VERCEL && {
+      errorFormat: 'pretty',
+      // Optimize for serverless cold starts
+      transactionOptions: {
+        maxWait: 5000, // 5 seconds
+        timeout: 10000, // 10 seconds
+      },
+    }),
   })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
