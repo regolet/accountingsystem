@@ -70,7 +70,7 @@ async function createBackup() {
 
     // Save backup to file
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    const filename = `neon-db-backup-${timestamp}.json`
+    const filename = `database-backup-${timestamp}.json`
     const filepath = path.join(backupDir, filename)
     
     // Custom JSON stringifier to handle BigInt
