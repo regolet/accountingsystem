@@ -36,11 +36,11 @@ const updateEmployeeSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const employee = await prisma.employee.findUnique({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     if (!employee) {
@@ -62,7 +62,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json()
@@ -70,7 +70,7 @@ export async function PUT(
 
     // Check if employee exists
     const existingEmployee = await prisma.employee.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     if (!existingEmployee) {
@@ -109,7 +109,7 @@ export async function PUT(
     }
 
     const employee = await prisma.employee.update({
-      where: { id: params.id },
+      where: { id: id },
       data: validatedData,
     })
 
@@ -132,12 +132,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check if employee exists
     const existingEmployee = await prisma.employee.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     if (!existingEmployee) {
@@ -148,7 +148,7 @@ export async function DELETE(
     }
 
     await prisma.employee.delete({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     return NextResponse.json({ message: 'Employee deleted successfully' })

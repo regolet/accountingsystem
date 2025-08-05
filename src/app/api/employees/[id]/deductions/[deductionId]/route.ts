@@ -15,10 +15,10 @@ const updateDeductionSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; deductionId: string } }
+  { params }: { params: Promise<{ id: string; deductionId: string }> }
 ) {
   try {
-    const { id: employeeId, deductionId } = params
+    const { id: employeeId, deductionId } = await params
     const body = await request.json()
     const validatedData = updateDeductionSchema.parse(body)
 
@@ -61,10 +61,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; deductionId: string } }
+  { params }: { params: Promise<{ id: string; deductionId: string }> }
 ) {
   try {
-    const { id: employeeId, deductionId } = params
+    const { id: employeeId, deductionId } = await params
 
     // Verify deduction exists and belongs to employee
     const existingDeduction = await prisma.employeeDeduction.findFirst({

@@ -4,12 +4,13 @@ import { Decimal } from '@prisma/client/runtime/library'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
 
     const attendance = await prisma.attendance.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         employee: {
           select: {
@@ -37,9 +38,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
 
     const body = await request.json()
     const {
@@ -53,7 +55,7 @@ export async function PUT(
 
     // Check if attendance record exists
     const existingAttendance = await prisma.attendance.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingAttendance) {
@@ -92,7 +94,7 @@ export async function PUT(
     }
 
     const updatedAttendance = await prisma.attendance.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         clockIn: clockIn ? new Date(clockIn) : undefined,
         clockOut: clockOut ? new Date(clockOut) : undefined,
@@ -129,13 +131,14 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
 
     // Check if attendance record exists
     const existingAttendance = await prisma.attendance.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingAttendance) {
@@ -143,7 +146,7 @@ export async function DELETE(
     }
 
     await prisma.attendance.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ message: 'Attendance record deleted successfully' })

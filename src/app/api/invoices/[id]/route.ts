@@ -20,11 +20,11 @@ const updateInvoiceSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const invoice = await prisma.invoice.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         customer: true,
         items: true,
@@ -51,7 +51,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json()
@@ -60,7 +60,7 @@ export async function PUT(
     let invoice
     if (validatedData.status) {
       // Simple status update
-      invoice = await updateInvoiceStatus(params.id, validatedData.status)
+      invoice = await updateInvoiceStatus(id, validatedData.status)
     } else if (validatedData.items || validatedData.customerId || validatedData.dueDate || validatedData.tax !== undefined) {
       // Full invoice update
       await prisma.$transaction(async (tx) => {
@@ -75,7 +75,7 @@ export async function PUT(
         if (validatedData.items) {
           // Delete existing items
           await tx.invoiceItem.deleteMany({
-            where: { invoiceId: params.id }
+            where: { invoiceId: id }
           })
 
           // Calculate totals
@@ -90,7 +90,7 @@ export async function PUT(
 
           // Create new items
           const itemsData = validatedData.items.map(item => ({
-            invoiceId: params.id,
+            invoiceId: id,
             description: item.description,
             quantity: item.quantity,
             unitPrice: new Prisma.Decimal(item.unitPrice),
@@ -104,7 +104,7 @@ export async function PUT(
 
         // Update invoice
         invoice = await tx.invoice.update({
-          where: { id: params.id },
+          where: { id: id },
           data: updateData,
           include: {
             customer: true,
@@ -116,7 +116,7 @@ export async function PUT(
     } else {
       // Simple notes update
       invoice = await prisma.invoice.update({
-        where: { id: params.id },
+        where: { id: id },
         data: { notes: validatedData.notes },
         include: {
           customer: true,
@@ -145,11 +145,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await prisma.invoice.delete({
-      where: { id: params.id },
+      where: { id: id },
     })
 
     return NextResponse.json({ success: true })

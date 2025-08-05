@@ -14,10 +14,10 @@ const updateEarningSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; earningId: string } }
+  { params }: { params: Promise<{ id: string; earningId: string }> }
 ) {
   try {
-    const { id: employeeId, earningId } = params
+    const { id: employeeId, earningId } = await params
     const body = await request.json()
     const validatedData = updateEarningSchema.parse(body)
 
@@ -60,10 +60,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; earningId: string } }
+  { params }: { params: Promise<{ id: string; earningId: string }> }
 ) {
   try {
-    const { id: employeeId, earningId } = params
+    const { id: employeeId, earningId } = await params
 
     // Verify earning exists and belongs to employee
     const existingEarning = await prisma.employeeEarning.findFirst({

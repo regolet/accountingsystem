@@ -15,7 +15,7 @@ const updateUserSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -37,7 +37,7 @@ export async function PUT(
         where: { email: validatedData.email }
       })
       
-      if (existingUser && existingUser.id !== params.id) {
+      if (existingUser && existingUser.id !== id) {
         return NextResponse.json(
           { error: 'Email already in use' },
           { status: 400 }
@@ -58,7 +58,7 @@ export async function PUT(
     }
 
     const user = await prisma.user.update({
-      where: { id: params.id },
+      where: { id: id },
       data: updateData,
       select: {
         id: true,
@@ -89,7 +89,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -103,7 +103,7 @@ export async function DELETE(
     }
 
     // Prevent self-deletion
-    if (params.id === session.user.id) {
+    if (id === session.user.id) {
       return NextResponse.json(
         { error: 'Cannot delete your own account' },
         { status: 400 }
@@ -112,7 +112,7 @@ export async function DELETE(
 
     // Check if user exists
     const user = await prisma.user.findUnique({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     if (!user) {
@@ -124,7 +124,7 @@ export async function DELETE(
 
     // Delete user
     await prisma.user.delete({
-      where: { id: params.id }
+      where: { id: id }
     })
 
     return NextResponse.json({ success: true })

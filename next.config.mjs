@@ -9,9 +9,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client'],
-  },
+  serverExternalPackages: ['@prisma/client'],
   // Environment variables configuration for deployment
   env: {
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,

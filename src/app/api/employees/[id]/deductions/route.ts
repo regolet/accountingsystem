@@ -19,10 +19,10 @@ const createDeductionSchema = baseDeductionSchema.refine((data) => data.amount |
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const employeeId = params.id
+    const { id: employeeId } = await params
 
     // Verify employee exists
     const employee = await prisma.employee.findUnique({
@@ -53,10 +53,10 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const employeeId = params.id
+    const { id: employeeId } = await params
     const body = await request.json()
     const validatedData = createDeductionSchema.parse(body)
 
