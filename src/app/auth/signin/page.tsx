@@ -50,23 +50,24 @@ export default function SignInPage() {
         // Auto-fill demo credentials
         setEmail('admin@demo.com')
         setPassword('password123')
-        setSuccess('Demo user created/verified! Credentials have been filled in. Attempting auto-signin...')
+        setSuccess('Demo user created/verified! Auto-signing in...')
         
-        // Auto-signin after successful demo user creation
+        // Quick auto-signin after successful demo user creation
         setTimeout(async () => {
           try {
+            setSuccess('Demo user created! Signing in...')
+            // Use NextAuth's built-in redirect for faster navigation
             const signInResult = await signIn('credentials', {
               email: 'admin@demo.com',
               password: 'password123',
-              redirect: false,
+              callbackUrl: '/dashboard',
+              redirect: true, // Let NextAuth handle the redirect
             })
             
+            // This code may not execute due to redirect: true
             if (signInResult?.ok) {
-              setSuccess('Demo user signed in successfully! Redirecting...')
-              setTimeout(() => {
-                router.push('/dashboard')
-                router.refresh()
-              }, 1000)
+              setSuccess('Signed in successfully! Redirecting...')
+              router.push('/dashboard')
             } else {
               setSuccess('Demo user created/verified! You can now sign in manually.')
               console.error('Auto-signin failed:', signInResult?.error)
@@ -75,7 +76,7 @@ export default function SignInPage() {
             console.error('Auto-signin error:', autoSignInError)
             setSuccess('Demo user created/verified! You can now sign in manually.')
           }
-        }, 2000)
+        }, 200) // Minimal delay for UI feedback
       } else {
         const errorData = await response.json()
         console.error('Demo user creation failed:', errorData)
@@ -108,7 +109,8 @@ export default function SignInPage() {
       const result = await signIn('credentials', {
         email,
         password,
-        redirect: false,
+        callbackUrl: '/dashboard',
+        redirect: false, // Keep false for manual signin to handle errors
       })
 
 
@@ -125,13 +127,11 @@ export default function SignInPage() {
           setError(`Login failed: ${result.error}`)
         }
       } else if (result?.ok) {
-        // Success - redirect to dashboard
+        // Success - immediate redirect to dashboard
         console.log('SignIn successful, redirecting to dashboard')
         setSuccess('Login successful! Redirecting...')
-        setTimeout(() => {
-          router.push('/dashboard')
-          router.refresh()
-        }, 1000)
+        // Immediate redirect for better UX
+        router.push('/dashboard')
       } else {
         console.error('Unexpected signin result:', result)
         setError('Login failed. Please try again.')
