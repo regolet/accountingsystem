@@ -7,3 +7,9 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  # Skip database operations during build
+  SKIP_ENV_VALIDATION = "true"
+
+[functions]
+  # Configure functions for better performance
+  node_bundler = "esbuild"
