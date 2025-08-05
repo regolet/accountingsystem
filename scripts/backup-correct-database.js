@@ -2,8 +2,8 @@ const { PrismaClient } = require('@prisma/client')
 const fs = require('fs')
 const path = require('path')
 
-// Use the correct Neon database connection
-const correctDatabaseUrl = "postgresql://neondb_owner:npg_ov2zLb4aFNKc@ep-steep-cloud-aey002qy.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+// Use the correct Neon database connection from environment
+const correctDatabaseUrl = process.env.BACKUP_DATABASE_URL || "postgresql://username:password@host:port/database"
 
 const prisma = new PrismaClient({
   datasources: {
@@ -16,13 +16,13 @@ const prisma = new PrismaClient({
 async function createCorrectBackup() {
   try {
     console.log('🗄️ Starting backup of CORRECT production database...')
-    console.log('🔗 Database: ep-steep-cloud-aey002qy.c-2.us-east-2.aws.neon.tech')
+    console.log('🔗 Database: [CONFIGURED_DATABASE]')
     
     const backup = {
       timestamp: new Date().toISOString(),
       version: '1.0.0',
-      source: 'correct-neon-production-db',
-      connection: 'ep-steep-cloud-aey002qy.c-2.us-east-2.aws.neon.tech',
+      source: 'production-database-backup',
+      connection: '[CONFIGURED_DATABASE]',
       data: {}
     }
 
