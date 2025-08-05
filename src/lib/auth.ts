@@ -32,20 +32,39 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
+          // Add connection retry logic for database queries
+          let retries = 3
+          let user = null
           
-          const user = await prisma.user.findUnique({
-            where: {
-              email: credentials.email
-            },
-            select: {
-              id: true,
-              email: true,
-              name: true,
-              password: true,
-              role: true,
-              customPermissions: true
+          while (retries > 0 && !user) {
+            try {
+              user = await prisma.user.findUnique({
+                where: {
+                  email: credentials.email
+                },
+                select: {
+                  id: true,
+                  email: true,
+                  name: true,
+                  password: true,
+                  role: true,
+                  customPermissions: true
+                }
+              })
+              break
+            } catch (dbError: unknown) {
+              const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown error'
+              if (errorMessage.includes('prepared statement') || errorMessage.includes('42P05')) {
+                retries--
+                if (retries > 0) {
+                  console.log(`Database query failed, retrying... (${retries} attempts left)`)
+                  await new Promise(resolve => setTimeout(resolve, 500))
+                  continue
+                }
+              }
+              throw dbError
             }
-          })
+          }
 
           if (!user) {
             return null

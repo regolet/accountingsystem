@@ -10,6 +10,10 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   serverExternalPackages: ['@prisma/client'],
+  experimental: {
+    workerThreads: false,
+    cpus: 1,
+  },
   // Environment variables configuration for deployment
   env: {
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
