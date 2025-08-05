@@ -8,10 +8,11 @@ export async function GET() {
       return NextResponse.json({
         totalRevenue: 0,
         totalExpenses: 0,
-        totalCustomers: 0,
-        totalInvoices: 0,
+        netIncome: 0,
+        outstandingInvoices: 0,
+        overdueInvoices: 0,
+        customerCount: 0,
         recentTransactions: [],
-        monthlyRevenue: [],
       })
     }
 
@@ -19,9 +20,14 @@ export async function GET() {
     return NextResponse.json(metrics)
   } catch (error) {
     console.error('Error fetching dashboard metrics:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch dashboard metrics' },
-      { status: 500 }
-    )
+    return NextResponse.json({
+      totalRevenue: 0,
+      totalExpenses: 0,
+      netIncome: 0,
+      outstandingInvoices: 0,
+      overdueInvoices: 0,
+      customerCount: 0,
+      recentTransactions: [],
+    }, { status: 500 })
   }
 }

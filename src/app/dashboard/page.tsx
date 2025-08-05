@@ -118,7 +118,7 @@ export default function DashboardPage() {
           <CardTitle>Recent Transactions</CardTitle>
         </CardHeader>
         <CardContent>
-          {metrics.recentTransactions.length === 0 ? (
+          {!metrics.recentTransactions || metrics.recentTransactions.length === 0 ? (
             <p className="text-gray-500">No transactions yet</p>
           ) : (
             <div className="space-y-4">

@@ -59,6 +59,15 @@ export async function getDashboardMetrics() {
   const revenue = totalRevenue._sum.amount || new Prisma.Decimal(0)
   const expenses = totalExpenses._sum.amount || new Prisma.Decimal(0)
 
+  // Format recent transactions for dashboard
+  const formattedTransactions = recentTransactions.map(transaction => ({
+    id: transaction.id,
+    description: transaction.description,
+    date: transaction.date.toISOString(),
+    type: transaction.type,
+    amount: transaction.amount.toString(),
+  }))
+
   return {
     totalRevenue: revenue.toNumber(),
     totalExpenses: expenses.toNumber(),
@@ -66,7 +75,7 @@ export async function getDashboardMetrics() {
     outstandingInvoices,
     overdueInvoices,
     customerCount,
-    recentTransactions,
+    recentTransactions: formattedTransactions,
   }
 }
 
