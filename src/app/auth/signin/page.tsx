@@ -36,7 +36,32 @@ export default function SignInPage() {
         // Auto-fill demo credentials
         setEmail('admin@demo.com')
         setPassword('password123')
-        setSuccess('Demo user created/verified! Credentials have been filled in. You can now sign in.')
+        setSuccess('Demo user created/verified! Credentials have been filled in. Attempting auto-signin...')
+        
+        // Auto-signin after successful demo user creation
+        setTimeout(async () => {
+          try {
+            const signInResult = await signIn('credentials', {
+              email: 'admin@demo.com',
+              password: 'password123',
+              redirect: false,
+            })
+            
+            if (signInResult?.ok) {
+              setSuccess('Demo user signed in successfully! Redirecting...')
+              setTimeout(() => {
+                router.push('/dashboard')
+                router.refresh()
+              }, 1000)
+            } else {
+              setSuccess('Demo user created/verified! You can now sign in manually.')
+              console.error('Auto-signin failed:', signInResult?.error)
+            }
+          } catch (autoSignInError) {
+            console.error('Auto-signin error:', autoSignInError)
+            setSuccess('Demo user created/verified! You can now sign in manually.')
+          }
+        }, 2000)
       } else {
         const errorData = await response.json()
         setError(`Failed to create demo user: ${errorData.error}`)
@@ -63,18 +88,28 @@ export default function SignInPage() {
       })
 
 
+      console.log('SignIn result:', result)
+
       if (result?.error) {
-        // More specific error messages
+        // More specific error messages  
+        console.error('SignIn error:', result.error)
         if (result.error === 'CredentialsSignin') {
-          setError('Invalid email or password. Please check your credentials.')
+          setError('Invalid email or password. Please check your credentials and try again.')
+        } else if (result.error === 'CallbackRouteError') {
+          setError('Authentication service error. Please try again.')
         } else {
           setError(`Login failed: ${result.error}`)
         }
       } else if (result?.ok) {
         // Success - redirect to dashboard
-        router.push('/dashboard')
-        router.refresh()
+        console.log('SignIn successful, redirecting to dashboard')
+        setSuccess('Login successful! Redirecting...')
+        setTimeout(() => {
+          router.push('/dashboard')
+          router.refresh()
+        }, 1000)
       } else {
+        console.error('Unexpected signin result:', result)
         setError('Login failed. Please try again.')
       }
     } catch (error) {

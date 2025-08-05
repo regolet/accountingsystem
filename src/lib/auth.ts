@@ -22,12 +22,16 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
+        console.log('Authorization attempt for:', credentials?.email)
+        
         if (!credentials?.email || !credentials?.password) {
+          console.log('Missing credentials')
           return null
         }
 
         // Skip database operations during build
         if (!process.env.DATABASE_URL) {
+          console.log('No DATABASE_URL, skipping auth')
           return null
         }
 
@@ -67,26 +71,37 @@ export const authOptions: NextAuthOptions = {
           }
 
           if (!user) {
+            console.log('User not found:', credentials.email)
             return null
           }
 
           if (!user.password) {
+            console.log('User has no password set:', credentials.email)
             return null
           }
+          
+          console.log('Comparing password for user:', credentials.email)
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
             user.password
           )
 
           if (!isPasswordValid) {
+            console.log('Password validation failed for:', credentials.email)
             return null
           }
+          console.log('User authentication successful:', { 
+            id: user.id, 
+            email: user.email, 
+            role: user.role 
+          })
+          
           return {
             id: user.id,
             email: user.email,
             name: user.name || '',
             role: user.role,
-            customPermissions: user.customPermissions || undefined,
+            customPermissions: user.customPermissions || '',
           }
         } catch (error) {
           console.error('Auth error:', error)
