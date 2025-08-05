@@ -9,7 +9,14 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    typedRoutes: true,
+    serverComponentsExternalPackages: ['@prisma/client'],
+  },
+  // Environment variables configuration for Vercel
+  env: {
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    DATABASE_URL: process.env.DATABASE_URL,
+    DIRECT_URL: process.env.DIRECT_URL,
   },
   headers: async () => {
     return [
