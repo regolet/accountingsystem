@@ -11,8 +11,9 @@ export async function createDemoUser() {
       existingUser = await prisma.user.findUnique({
         where: { email: 'admin@demo.com' }
       })
-    } catch (findError) {
-      console.log('Find user query failed, will try to create:', findError.message)
+    } catch (findError: unknown) {
+      const errorMessage = findError instanceof Error ? findError.message : 'Unknown error'
+      console.log('Find user query failed, will try to create:', errorMessage)
       existingUser = null
     }
 
@@ -46,7 +47,8 @@ export async function createDemoUser() {
     console.error('Error creating demo user:', error)
     
     // If it's a prepared statement error, try to handle it gracefully
-    if (error.message?.includes('prepared statement') || error.message?.includes('42P05')) {
+    const errorMessage = error instanceof Error ? error.message : ''
+    if (errorMessage.includes('prepared statement') || errorMessage.includes('42P05')) {
       console.log('Handling connection pool issue...')
       // Return a mock user for now to allow the app to work
       return {
