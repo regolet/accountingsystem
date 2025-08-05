@@ -2,65 +2,92 @@ import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 
 export async function createDemoUser() {
-  try {
-    console.log('Checking for existing demo user...')
-    
-    // Try to find existing user first
-    let existingUser
+  let connectionAttempts = 0
+  const maxAttempts = 3
+  
+  while (connectionAttempts < maxAttempts) {
     try {
-      existingUser = await prisma.user.findUnique({
-        where: { email: 'admin@demo.com' }
+      connectionAttempts++
+      console.log(`Demo user creation attempt ${connectionAttempts}/${maxAttempts}`)
+      
+      // Try to find existing user first
+      let existingUser
+      try {
+        console.log('Checking for existing demo user...')
+        existingUser = await prisma.user.findUnique({
+          where: { email: 'admin@demo.com' }
+        })
+        
+        if (existingUser) {
+          console.log('Demo user already exists:', existingUser.email)
+          return existingUser
+        }
+      } catch (findError: unknown) {
+        const errorMessage = findError instanceof Error ? findError.message : 'Unknown error'
+        console.log(`Find user query failed (attempt ${connectionAttempts}):`, errorMessage)
+        
+        // If it's a connection issue, try again
+        if (errorMessage.includes('prepared statement') || errorMessage.includes('42P05') || errorMessage.includes('connection')) {
+          if (connectionAttempts < maxAttempts) {
+            console.log('Connection issue detected, retrying...')
+            await new Promise(resolve => setTimeout(resolve, 1000 * connectionAttempts)) // Progressive delay
+            continue
+          }
+        }
+        existingUser = null
+      }
+
+      console.log('Creating new demo user...')
+      
+      // Create demo admin user
+      const hashedPassword = await bcrypt.hash('password123', 12)
+      
+      const user = await prisma.user.create({
+        data: {
+          name: 'Demo Admin',
+          email: 'admin@demo.com',
+          password: hashedPassword,
+          role: 'ADMIN',
+          // Initialize email settings
+          smtpHost: 'smtp.gmail.com',
+          smtpPort: 587,
+          smtpEnabled: false, // Disabled by default
+          smtpFromName: 'AccountingPro Demo',
+        }
       })
-    } catch (findError: unknown) {
-      const errorMessage = findError instanceof Error ? findError.message : 'Unknown error'
-      console.log('Find user query failed, will try to create:', errorMessage)
-      existingUser = null
-    }
 
-    if (existingUser) {
-      console.log('Demo user already exists')
-      return existingUser
-    }
-
-    console.log('Creating new demo user...')
-    
-    // Create demo admin user
-    const hashedPassword = await bcrypt.hash('password123', 12)
-    
-    const user = await prisma.user.create({
-      data: {
-        name: 'Demo Admin',
-        email: 'admin@demo.com',
-        password: hashedPassword,
-        role: 'ADMIN',
-        // Initialize email settings
-        smtpHost: 'smtp.gmail.com',
-        smtpPort: 587,
-        smtpEnabled: false, // Disabled by default
-        smtpFromName: 'AccountingPro Demo',
+      console.log('Demo user created successfully:', user.email)
+      return user
+      
+    } catch (error) {
+      console.error(`Error creating demo user (attempt ${connectionAttempts}):`, error)
+      
+      // If it's a connection/prepared statement error and we have retries left, try again
+      const errorMessage = error instanceof Error ? error.message : ''
+      if ((errorMessage.includes('prepared statement') || errorMessage.includes('42P05') || errorMessage.includes('connection')) && connectionAttempts < maxAttempts) {
+        console.log(`Connection issue detected, retrying in ${connectionAttempts} seconds...`)
+        await new Promise(resolve => setTimeout(resolve, 1000 * connectionAttempts))
+        continue
       }
-    })
-
-    console.log('Demo user created successfully')
-    return user
-  } catch (error) {
-    console.error('Error creating demo user:', error)
-    
-    // If it's a prepared statement error, try to handle it gracefully
-    const errorMessage = error instanceof Error ? error.message : ''
-    if (errorMessage.includes('prepared statement') || errorMessage.includes('42P05')) {
-      console.log('Handling connection pool issue...')
-      // Return a mock user for now to allow the app to work
-      return {
-        id: 'demo-user-id',
-        email: 'admin@demo.com',
-        name: 'Demo Admin',
-        role: 'ADMIN'
+      
+      // If we've exhausted retries or it's a different error, handle it
+      if (connectionAttempts >= maxAttempts) {
+        console.log('Max connection attempts reached, returning fallback user')
+        // Return a fallback user to allow the app to work
+        return {
+          id: 'demo-fallback-user',
+          email: 'admin@demo.com',
+          name: 'Demo Admin (Fallback)',
+          role: 'ADMIN'
+        }
       }
+      
+      throw error
     }
-    
-    throw error
   }
+  
+  // This shouldn't be reached, but just in case
+  throw new Error('Failed to create demo user after maximum attempts')
 }
 
 export async function createDemoSettings() {
