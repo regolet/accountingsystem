@@ -2,7 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  output: 'standalone',
   typescript: {
     tsconfigPath: './tsconfig.json',
   },
@@ -13,21 +12,6 @@ const nextConfig = {
   experimental: {
     workerThreads: false,
     cpus: 1,
-  },
-  // Environment variables configuration for deployment
-  env: {
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-    DATABASE_URL: process.env.DATABASE_URL,
-    DIRECT_URL: process.env.DIRECT_URL,
-  },
-  // Skip database operations during build if no DATABASE_URL
-  webpack: (config, { isServer }) => {
-    if (isServer && !process.env.DATABASE_URL) {
-      // Skip database-dependent modules during build
-      config.externals = [...config.externals, '@prisma/client'];
-    }
-    return config;
   },
   headers: async () => {
     return [
