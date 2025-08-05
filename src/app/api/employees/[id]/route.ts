@@ -39,8 +39,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+    
     const employee = await prisma.employee.findUnique({
-      where: { id: id },
+      where: { id },
     })
 
     if (!employee) {
@@ -65,12 +67,13 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
     const validatedData = updateEmployeeSchema.parse(body)
 
     // Check if employee exists
     const existingEmployee = await prisma.employee.findUnique({
-      where: { id: id }
+      where: { id }
     })
 
     if (!existingEmployee) {
@@ -109,7 +112,7 @@ export async function PUT(
     }
 
     const employee = await prisma.employee.update({
-      where: { id: id },
+      where: { id },
       data: validatedData,
     })
 
@@ -135,9 +138,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+    
     // Check if employee exists
     const existingEmployee = await prisma.employee.findUnique({
-      where: { id: id }
+      where: { id }
     })
 
     if (!existingEmployee) {
@@ -148,7 +153,7 @@ export async function DELETE(
     }
 
     await prisma.employee.delete({
-      where: { id: id },
+      where: { id },
     })
 
     return NextResponse.json({ message: 'Employee deleted successfully' })

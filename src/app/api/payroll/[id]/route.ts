@@ -4,11 +4,13 @@ import { Prisma, PayrollStatus } from '@prisma/client'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const payroll = await prisma.payroll.findUnique({
-      where: { id: params.id },
+      where: { id },
+    
       include: {
         employee: {
           select: {
@@ -39,9 +41,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
     const {
       payDate,
@@ -68,7 +71,7 @@ export async function PUT(
 
     // Check if payroll record exists
     const existingPayroll = await prisma.payroll.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingPayroll) {
@@ -127,7 +130,7 @@ export async function PUT(
     }
 
     const updatedPayroll = await prisma.payroll.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         employee: {
@@ -152,12 +155,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     // Check if payroll record exists
     const existingPayroll = await prisma.payroll.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingPayroll) {
@@ -173,7 +177,7 @@ export async function DELETE(
     }
 
     await prisma.payroll.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ message: 'Payroll record deleted successfully' })

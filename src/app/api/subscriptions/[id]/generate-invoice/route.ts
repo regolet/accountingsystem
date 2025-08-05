@@ -4,11 +4,12 @@ import { Prisma } from '@prisma/client'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const subscription = await prisma.subscription.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { customer: true },
     })
 

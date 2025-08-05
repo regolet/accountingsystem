@@ -7,9 +7,10 @@ import { ReimbursementStatus } from '@prisma/client'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -22,7 +23,7 @@ export async function GET(
     )
 
     const reimbursement = await prisma.reimbursement.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         customer: true,
         items: {
@@ -63,9 +64,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -89,7 +91,7 @@ export async function PUT(
 
     // Check if reimbursement exists
     const existingReimbursement = await prisma.reimbursement.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { items: true }
     })
 
@@ -143,7 +145,7 @@ export async function PUT(
 
       // Delete existing items and create new ones
       await prisma.reimbursementItem.deleteMany({
-        where: { reimbursementId: params.id }
+        where: { reimbursementId: id }
       })
 
       updateData.items = {
@@ -171,7 +173,7 @@ export async function PUT(
     }
 
     const reimbursement = await prisma.reimbursement.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         customer: true,
@@ -209,9 +211,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -225,7 +228,7 @@ export async function DELETE(
 
     // Check if reimbursement exists
     const existingReimbursement = await prisma.reimbursement.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!existingReimbursement) {
@@ -233,7 +236,7 @@ export async function DELETE(
     }
 
     await prisma.reimbursement.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({ message: 'Reimbursement deleted successfully' })

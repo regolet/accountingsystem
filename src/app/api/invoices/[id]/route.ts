@@ -23,8 +23,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+    
     const invoice = await prisma.invoice.findUnique({
-      where: { id: id },
+      where: { id },
       include: {
         customer: true,
         items: true,
@@ -54,6 +56,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
     const validatedData = updateInvoiceSchema.parse(body)
 
@@ -104,7 +107,7 @@ export async function PUT(
 
         // Update invoice
         invoice = await tx.invoice.update({
-          where: { id: id },
+          where: { id },
           data: updateData,
           include: {
             customer: true,
@@ -116,7 +119,7 @@ export async function PUT(
     } else {
       // Simple notes update
       invoice = await prisma.invoice.update({
-        where: { id: id },
+        where: { id },
         data: { notes: validatedData.notes },
         include: {
           customer: true,
@@ -148,8 +151,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+    
     await prisma.invoice.delete({
-      where: { id: id },
+      where: { id },
     })
 
     return NextResponse.json({ success: true })

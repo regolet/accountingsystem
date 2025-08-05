@@ -4,11 +4,12 @@ import { BatchStatus } from '@prisma/client'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const batch = await prisma.payrollBatch.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!batch) {
@@ -24,14 +25,15 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
     const { batchName, payDate, status } = body
 
     const batch = await prisma.payrollBatch.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!batch) {
@@ -49,7 +51,7 @@ export async function PUT(
     if (status !== undefined) updateData.status = status
 
     const updatedBatch = await prisma.payrollBatch.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData
     })
 
@@ -62,11 +64,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const batch = await prisma.payrollBatch.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!batch) {
@@ -91,7 +94,7 @@ export async function DELETE(
 
     // Delete the batch
     await prisma.payrollBatch.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({ message: 'Payroll batch deleted successfully' })

@@ -14,9 +14,10 @@ export async function OPTIONS() {
 // Simple debug POST endpoint
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  return NextResponse.json({ message: 'PATCH working', id: params.id })
+  const { id } = await params
+  return NextResponse.json({ message: 'PATCH working', id })
 }
 
 const emailSettingsSchema = z.object({
@@ -31,7 +32,7 @@ const emailSettingsSchema = z.object({
 // GET user email settings
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -39,7 +40,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { id } = params
+    const { id } = await params
 
     // Users can only access their own settings, or admins can access any
     if (session.user.id !== id && session.user.role !== 'ADMIN') {
@@ -82,7 +83,7 @@ export async function GET(
 // PUT update user email settings
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -90,7 +91,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { id } = params
+    const { id } = await params
 
     // Users can only update their own settings, or admins can update any
     if (session.user.id !== id && session.user.role !== 'ADMIN') {
@@ -176,7 +177,7 @@ export async function PUT(
 // Test email settings
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -185,7 +186,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { id } = params
+    const { id } = await params
 
     // Users can only test their own settings, or admins can test any
     if (session.user.id !== id && session.user.role !== 'ADMIN') {

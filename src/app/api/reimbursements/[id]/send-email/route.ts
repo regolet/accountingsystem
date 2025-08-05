@@ -7,9 +7,10 @@ import { generateReimbursementPDF } from '@/lib/pdf-generator'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -43,8 +44,6 @@ export async function POST(
         code: 'EMAIL_NOT_CONFIGURED'
       }, { status: 400 })
     }
-
-    const { id } = params
 
     // Get reimbursement with customer details and items
     const reimbursement = await prisma.reimbursement.findUnique({

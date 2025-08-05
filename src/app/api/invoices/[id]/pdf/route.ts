@@ -4,12 +4,14 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+    
     // First check if invoice exists
     const invoice = await prisma.invoice.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { invoiceNumber: true }
     })
 
@@ -21,7 +23,7 @@ export async function GET(
     }
 
     // Generate PDF using the new PDF generator
-    const pdfBuffer = await generateInvoicePDF(params.id)
+    const pdfBuffer = await generateInvoicePDF(id)
 
     return new NextResponse(pdfBuffer, {
       headers: {

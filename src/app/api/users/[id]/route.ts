@@ -28,6 +28,7 @@ export async function PUT(
       )
     }
 
+    const { id } = await params
     const body = await request.json()
     const validatedData = updateUserSchema.parse(body)
 
@@ -58,7 +59,7 @@ export async function PUT(
     }
 
     const user = await prisma.user.update({
-      where: { id: id },
+      where: { id },
       data: updateData,
       select: {
         id: true,
@@ -102,6 +103,8 @@ export async function DELETE(
       )
     }
 
+    const { id } = await params
+
     // Prevent self-deletion
     if (id === session.user.id) {
       return NextResponse.json(
@@ -112,7 +115,7 @@ export async function DELETE(
 
     // Check if user exists
     const user = await prisma.user.findUnique({
-      where: { id: id }
+      where: { id }
     })
 
     if (!user) {
@@ -124,7 +127,7 @@ export async function DELETE(
 
     // Delete user
     await prisma.user.delete({
-      where: { id: id }
+      where: { id }
     })
 
     return NextResponse.json({ success: true })

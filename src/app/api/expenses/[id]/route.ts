@@ -20,8 +20,10 @@ export async function GET(
       session.user.customPermissions
     )
 
+    const { id } = await params
+    
     const expense = await prisma.expense.findUnique({
-      where: { id: id }
+      where: { id }
     })
 
     if (!expense) {
@@ -54,6 +56,7 @@ export async function PUT(
       session.user.customPermissions
     )
 
+    const { id } = await params
     const body = await request.json()
     const {
       title,
@@ -70,7 +73,7 @@ export async function PUT(
 
     // Check if expense exists
     const existingExpense = await prisma.expense.findUnique({
-      where: { id: id }
+      where: { id }
     })
 
     if (!existingExpense) {
@@ -109,7 +112,7 @@ export async function PUT(
     }
 
     const expense = await prisma.expense.update({
-      where: { id: id },
+      where: { id },
       data: updateData
     })
 
@@ -139,9 +142,11 @@ export async function DELETE(
       session.user.customPermissions
     )
 
+    const { id } = await params
+    
     // Check if expense exists
     const existingExpense = await prisma.expense.findUnique({
-      where: { id: id }
+      where: { id }
     })
 
     if (!existingExpense) {
@@ -149,7 +154,7 @@ export async function DELETE(
     }
 
     await prisma.expense.delete({
-      where: { id: id }
+      where: { id }
     })
 
     return NextResponse.json({ message: 'Expense deleted successfully' })

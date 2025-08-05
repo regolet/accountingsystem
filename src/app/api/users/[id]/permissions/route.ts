@@ -10,7 +10,7 @@ const updatePermissionsSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -23,9 +23,11 @@ export async function GET(
       )
     }
 
+    const { id } = await params
+
     // Check if user exists
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { id: true, customPermissions: true }
     })
 
@@ -58,7 +60,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -74,9 +76,11 @@ export async function PUT(
     const body = await request.json()
     const validatedData = updatePermissionsSchema.parse(body)
 
+    const { id } = await params
+
     // Check if user exists
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: { id: true }
     })
 
@@ -89,7 +93,7 @@ export async function PUT(
 
     // Update user permissions
     await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         customPermissions: JSON.stringify(validatedData.permissions)
       }
