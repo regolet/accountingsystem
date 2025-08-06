@@ -68,10 +68,16 @@ export default function InvoicesSection() {
       if (searchTerm) params.append('search', searchTerm)
       
       const response = await fetch(`/api/invoices?${params}`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
-      setInvoices(data.invoices)
+      setInvoices(data.invoices || [])
     } catch (error) {
       console.error('Error fetching invoices:', error)
+      setInvoices([])
     } finally {
       setLoading(false)
     }
@@ -80,20 +86,33 @@ export default function InvoicesSection() {
   const fetchCustomers = async () => {
     try {
       const response = await fetch('/api/customers')
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
-      setCustomers(data.customers)
+      setCustomers(data.customers || [])
     } catch (error) {
       console.error('Error fetching customers:', error)
+      setCustomers([])
     }
   }
 
   const fetchSubscriptions = async () => {
     try {
       const response = await fetch('/api/subscriptions')
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
-      setSubscriptions(data.subscriptions.filter((s: Subscription & { status: string }) => s.status === 'ACTIVE'))
+      const subscriptions = data.subscriptions || []
+      setSubscriptions(subscriptions.filter((s: Subscription & { status: string }) => s.status === 'ACTIVE'))
     } catch (error) {
       console.error('Error fetching subscriptions:', error)
+      setSubscriptions([])
     }
   }
 

@@ -67,10 +67,16 @@ export default function SubscriptionsPage() {
       if (statusFilter) params.append('status', statusFilter)
       
       const response = await fetch(`/api/subscriptions?${params}`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
-      setSubscriptions(data.subscriptions)
+      setSubscriptions(data.subscriptions || [])
     } catch (error) {
       console.error('Error fetching subscriptions:', error)
+      setSubscriptions([])
     } finally {
       setLoading(false)
     }
@@ -79,10 +85,16 @@ export default function SubscriptionsPage() {
   const fetchCustomers = async () => {
     try {
       const response = await fetch('/api/customers')
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
-      setCustomers(data.customers)
+      setCustomers(data.customers || [])
     } catch (error) {
       console.error('Error fetching customers:', error)
+      setCustomers([])
     }
   }
 

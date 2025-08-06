@@ -90,10 +90,16 @@ export default function EditInvoicePage() {
   const fetchCustomers = async () => {
     try {
       const response = await fetch('/api/customers')
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
-      setCustomers(data.customers)
+      setCustomers(data.customers || [])
     } catch (error) {
       console.error('Error fetching customers:', error)
+      setCustomers([])
     }
   }
 

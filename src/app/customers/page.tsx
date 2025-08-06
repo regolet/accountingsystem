@@ -126,10 +126,16 @@ export default function CustomersPage() {
       if (searchTerm) params.append('search', searchTerm)
       
       const response = await fetch(`/api/customers?${params}`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
-      setCustomers(data.customers)
+      setCustomers(data.customers || [])
     } catch (error) {
       console.error('Error fetching customers:', error)
+      setCustomers([])
     } finally {
       setLoading(false)
     }
@@ -585,7 +591,7 @@ export default function CustomersPage() {
       )}
 
       <div className="grid gap-4">
-        {customers.length === 0 ? (
+        {!customers || customers.length === 0 ? (
           <Card>
             <CardContent className="text-center py-8">
               <p className="text-gray-500">No customers found. Add your first customer to get started.</p>

@@ -18,7 +18,20 @@ const createSubscriptionSchema = z.object({
 })
 
 export async function GET(request: NextRequest) {
+  const startTime = Date.now()
+  
   try {
+    // Check if database is available
+    if (!process.env.DATABASE_URL) {
+      console.warn('DATABASE_URL not available, returning empty subscriptions list')
+      return NextResponse.json({
+        subscriptions: [],
+        total: 0,
+        limit: 10,
+        offset: 0,
+      })
+    }
+
     const searchParams = request.nextUrl.searchParams
     const customerId = searchParams.get('customerId')
     const status = searchParams.get('status')
@@ -54,11 +67,20 @@ export async function GET(request: NextRequest) {
       offset,
     })
   } catch (error) {
-    console.error('Error fetching subscriptions:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch subscriptions' },
-      { status: 500 }
-    )
+    console.error('Error fetching subscriptions:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack?.substring(0, 500) : 'No stack',
+      elapsed: Date.now() - startTime
+    })
+    
+    // Return empty array instead of 500 to prevent frontend crashes
+    return NextResponse.json({
+      subscriptions: [],
+      total: 0,
+      limit: 10,
+      offset: 0,
+      error: 'Failed to fetch subscriptions'
+    })
   }
 }
 
