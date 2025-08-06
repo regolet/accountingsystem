@@ -148,38 +148,42 @@ function UserProfile() {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center">
-        <div className="h-8 w-8 bg-primary-600 rounded-full flex items-center justify-center">
-          <span className="text-sm font-medium text-white">
+      <div className="flex items-center min-w-0">
+        <div className="h-6 w-6 sm:h-8 sm:w-8 bg-primary-600 rounded-full flex items-center justify-center flex-shrink-0">
+          <span className="text-xs sm:text-sm font-medium text-white">
             {getInitials(session.user.name || 'User')}
           </span>
         </div>
-        <div className="ml-3 flex-1">
-          <p className="text-sm font-medium">{session.user.name}</p>
-          <p className="text-xs text-gray-400">{session.user.email}</p>
+        <div className="ml-2 sm:ml-3 flex-1 min-w-0">
+          <p className="text-xs sm:text-sm font-medium truncate">{session.user.name}</p>
+          <p className="text-xs text-gray-400 truncate">{session.user.email}</p>
         </div>
       </div>
       <div className="space-y-1">
         <Link
           href="/profile"
-          className="w-full flex items-center px-2 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors"
+          className="w-full flex items-center px-2 py-1 sm:py-2 text-xs sm:text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors"
         >
-          <UserCircle className="h-4 w-4 mr-2" />
-          My Profile
+          <UserCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
+          <span className="truncate">My Profile</span>
         </Link>
         <button
           onClick={handleSignOut}
-          className="w-full flex items-center px-2 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors"
+          className="w-full flex items-center px-2 py-1 sm:py-2 text-xs sm:text-sm text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors"
         >
-          <LogOut className="h-4 w-4 mr-2" />
-          Sign out
+          <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
+          <span className="truncate">Sign out</span>
         </button>
       </div>
     </div>
   )
 }
 
-export function Sidebar() {
+interface SidebarProps {
+  onClose?: () => void
+}
+
+export function Sidebar({ onClose }: SidebarProps = {}) {
   const pathname = usePathname()
   const { data: session } = useSession()
   const isAdmin = session?.user?.role === 'ADMIN'
@@ -218,38 +222,39 @@ export function Sidebar() {
         <div key={item.name}>
           <button
             onClick={() => toggleGroup(item.name)}
-            className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+            className={`w-full flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 text-sm font-medium rounded-lg transition-colors ${
               hasActiveChild
                 ? 'bg-primary-600 text-white'
                 : 'text-gray-300 hover:bg-gray-800 hover:text-white'
             }`}
           >
-            <div className="flex items-center">
-              <item.icon className="h-5 w-5 mr-3" />
-              {item.name}
+            <div className="flex items-center min-w-0">
+              <item.icon className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="truncate">{item.name}</span>
             </div>
             {isExpanded ? (
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
             ) : (
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
             )}
           </button>
           {isExpanded && (
-            <div className="ml-4 mt-1 space-y-1">
+            <div className="ml-2 sm:ml-4 mt-1 space-y-1">
               {'type' in item && item.type === 'group' && item.children?.map((child) => {
                 const isActive = pathname === child.href
                 return (
                   <Link
                     key={child.name}
                     href={child.href}
-                    className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    onClick={onClose}
+                    className={`flex items-center px-3 sm:px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                       isActive
                         ? 'bg-primary-500 text-white'
                         : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                     }`}
                   >
-                    <child.icon className="h-4 w-4 mr-3" />
-                    {child.name}
+                    <child.icon className="h-3 w-3 sm:h-4 sm:w-4 mr-2 sm:mr-3 flex-shrink-0" />
+                    <span className="truncate">{child.name}</span>
                   </Link>
                 )
               })}
@@ -264,33 +269,47 @@ export function Sidebar() {
       <Link
         key={item.name}
         href={item.href}
-        className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+        onClick={onClose}
+        className={`flex items-center px-3 sm:px-4 py-2 sm:py-3 text-sm font-medium rounded-lg transition-colors ${
           isActive
             ? 'bg-primary-600 text-white'
             : 'text-gray-300 hover:bg-gray-800 hover:text-white'
         }`}
       >
-        <item.icon className="h-5 w-5 mr-3" />
-        {item.name}
+        <item.icon className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 flex-shrink-0" />
+        <span className="truncate">{item.name}</span>
       </Link>
     )
   }
 
   return (
-    <div className="flex flex-col w-64 bg-gray-900 text-white">
+    <div className="flex flex-col w-64 bg-gray-900 text-white h-full overflow-y-auto">
       {/* Logo */}
-      <div className="flex items-center h-16 px-6 bg-gray-800">
-        <Building2 className="h-8 w-8 text-primary-400" />
-        <span className="ml-3 text-lg font-semibold">AccountingPro</span>
+      <div className="flex items-center justify-between h-16 px-4 sm:px-6 bg-gray-800">
+        <div className="flex items-center min-w-0">
+          <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary-400 flex-shrink-0" />
+          <span className="ml-2 sm:ml-3 text-base sm:text-lg font-semibold truncate">AccountingPro</span>
+        </div>
+        {/* Close button for mobile */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 lg:hidden"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-2">
+      <nav className="flex-1 px-3 sm:px-4 py-4 sm:py-6 space-y-2">
         {navigationItems.map(renderNavItem)}
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-3 sm:p-4 border-t border-gray-800">
         <UserProfile />
       </div>
     </div>

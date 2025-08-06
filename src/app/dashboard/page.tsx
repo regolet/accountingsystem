@@ -49,25 +49,30 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
+      <div className="flex items-center justify-center min-h-[50vh] px-4">
+        <div className="text-base sm:text-lg text-center">Loading dashboard...</div>
       </div>
     )
   }
 
   if (!metrics) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-red-600">Failed to load dashboard data</div>
+      <div className="flex items-center justify-center min-h-[50vh] px-4">
+        <div className="text-base sm:text-lg text-red-600 text-center">Failed to load dashboard data</div>
       </div>
     )
   }
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Dashboard</h1>
+        <div className="mt-3 sm:mt-0">
+          <p className="text-sm text-gray-500">Welcome back! Here's your business overview.</p>
+        </div>
+      </div>
       
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -115,22 +120,25 @@ export default function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">Recent Transactions</CardTitle>
         </CardHeader>
         <CardContent>
           {!metrics.recentTransactions || metrics.recentTransactions.length === 0 ? (
-            <p className="text-gray-500">No transactions yet</p>
+            <div className="text-center py-8">
+              <p className="text-gray-500">No transactions yet</p>
+              <p className="text-sm text-gray-400 mt-1">Transactions will appear here once you start using the system</p>
+            </div>
           ) : (
             <div className="space-y-4">
               {metrics.recentTransactions.map((transaction) => (
-                <div key={transaction.id} className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{transaction.description}</p>
-                    <p className="text-sm text-gray-500">
+                <div key={transaction.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex-1">
+                    <p className="font-medium text-sm sm:text-base">{transaction.description}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                       {new Date(transaction.date).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className={`font-semibold ${
+                  <div className={`font-semibold text-sm sm:text-base mt-2 sm:mt-0 ${
                     transaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'
                   }`}>
                     {transaction.type === 'INCOME' ? '+' : '-'}
