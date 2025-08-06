@@ -137,10 +137,16 @@ export default function ReimbursementsSection() {
       if (statusFilter) params.append('status', statusFilter)
       
       const response = await fetch(`/api/reimbursements?${params}`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
       setReimbursements(data.reimbursements || [])
     } catch (error) {
       console.error('Error fetching reimbursements:', error)
+      setReimbursements([])
     } finally {
       setLoading(false)
     }
@@ -149,10 +155,16 @@ export default function ReimbursementsSection() {
   const fetchCustomers = async () => {
     try {
       const response = await fetch('/api/customers')
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
       setCustomers(data.customers || [])
     } catch (error) {
       console.error('Error fetching customers:', error)
+      setCustomers([])
     }
   }
 
@@ -163,10 +175,16 @@ export default function ReimbursementsSection() {
       if (dateTo) params.append('endDate', dateTo)
       
       const response = await fetch(`/api/expenses?${params}`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
       setExpenses(data.expenses || [])
     } catch (error) {
       console.error('Error fetching expenses:', error)
+      setExpenses([])
     }
   }
 

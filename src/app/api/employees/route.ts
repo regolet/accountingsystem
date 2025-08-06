@@ -34,7 +34,20 @@ const createEmployeeSchema = z.object({
 })
 
 export async function GET(request: NextRequest) {
+  const startTime = Date.now()
+  
   try {
+    // Check if database is available
+    if (!process.env.DATABASE_URL) {
+      console.warn('DATABASE_URL not available, returning empty employees list')
+      return NextResponse.json({
+        employees: [],
+        total: 0,
+        limit: 10,
+        offset: 0,
+      })
+    }
+
     const searchParams = request.nextUrl.searchParams
     const search = searchParams.get('search')
     const department = searchParams.get('department')
@@ -97,11 +110,20 @@ export async function GET(request: NextRequest) {
       offset,
     })
   } catch (error) {
-    console.error('Error fetching employees:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch employees' },
-      { status: 500 }
-    )
+    console.error('Error fetching employees:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack?.substring(0, 500) : 'No stack',
+      elapsed: Date.now() - startTime
+    })
+    
+    // Return empty array structure to prevent frontend crashes
+    return NextResponse.json({
+      employees: [],
+      total: 0,
+      limit: 10,
+      offset: 0,
+      error: 'Failed to fetch employees'
+    })
   }
 }
 

@@ -98,10 +98,16 @@ export default function ExpensesPage() {
       if (dateRange.endDate) params.append('endDate', dateRange.endDate)
       
       const response = await fetch(`/api/expenses?${params}`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
       setExpenses(data.expenses || [])
     } catch (error) {
       console.error('Error fetching expenses:', error)
+      setExpenses([])
     } finally {
       setLoading(false)
     }
