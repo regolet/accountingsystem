@@ -248,7 +248,23 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const startTime = Date.now()
+  
   try {
+    // Check if database is available
+    if (!process.env.DATABASE_URL) {
+      console.warn('DATABASE_URL not available, returning empty payroll batches list')
+      return NextResponse.json({
+        batches: [],
+        pagination: {
+          page: 1,
+          limit: 20,
+          total: 0,
+          pages: 0,
+        },
+      })
+    }
+
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
@@ -272,7 +288,22 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Error fetching payroll batches:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('Error fetching payroll batches:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack?.substring(0, 500) : 'No stack',
+      elapsed: Date.now() - startTime
+    })
+    
+    // Return empty array structure to prevent frontend crashes
+    return NextResponse.json({
+      batches: [],
+      pagination: {
+        page: 1,
+        limit: 20,
+        total: 0,
+        pages: 0,
+      },
+      error: 'Failed to fetch payroll batches'
+    })
   }
 }

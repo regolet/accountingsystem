@@ -14,7 +14,20 @@ const createTransactionSchema = z.object({
 })
 
 export async function GET(request: NextRequest) {
+  const startTime = Date.now()
+  
   try {
+    // Check if database is available
+    if (!process.env.DATABASE_URL) {
+      console.warn('DATABASE_URL not available, returning empty transactions list')
+      return NextResponse.json({
+        transactions: [],
+        total: 0,
+        limit: 50,
+        offset: 0,
+      })
+    }
+
     const searchParams = request.nextUrl.searchParams
     const customerId = searchParams.get('customerId')
     const type = searchParams.get('type')
@@ -56,11 +69,20 @@ export async function GET(request: NextRequest) {
       offset,
     })
   } catch (error) {
-    console.error('Error fetching transactions:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch transactions' },
-      { status: 500 }
-    )
+    console.error('Error fetching transactions:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack?.substring(0, 500) : 'No stack',
+      elapsed: Date.now() - startTime
+    })
+    
+    // Return empty array structure to prevent frontend crashes
+    return NextResponse.json({
+      transactions: [],
+      total: 0,
+      limit: 50,
+      offset: 0,
+      error: 'Failed to fetch transactions'
+    })
   }
 }
 

@@ -6,17 +6,39 @@ import { requireGranularPermission } from '@/lib/permissions'
 import { ReimbursementStatus } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
+  const startTime = Date.now()
+  
   try {
+    // Check if database is available
+    if (!process.env.DATABASE_URL) {
+      console.warn('DATABASE_URL not available, returning empty reimbursements list')
+      return NextResponse.json({
+        reimbursements: [],
+        pagination: {
+          page: 1,
+          limit: 50,
+          total: 0,
+          pages: 0
+        }
+      })
+    }
+
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    requireGranularPermission(
-      session.user.role,
-      'viewReimbursements',
-      session.user.customPermissions
-    )
+    // Wrapped permission check with error handling
+    try {
+      requireGranularPermission(
+        session.user.role,
+        'viewReimbursements',
+        session.user.customPermissions
+      )
+    } catch (permissionError) {
+      console.error('Permission denied for viewReimbursements:', permissionError)
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    }
 
     const { searchParams } = new URL(request.url)
     const customerId = searchParams.get('customerId')
@@ -107,11 +129,23 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error: unknown) {
-    console.error('Error fetching reimbursements:', error)
-    return NextResponse.json(
-      { error: (error as Error).message || 'Failed to fetch reimbursements' },
-      { status: 500 }
-    )
+    console.error('Error fetching reimbursements:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack?.substring(0, 500) : 'No stack',
+      elapsed: Date.now() - startTime
+    })
+    
+    // Return empty array structure to prevent frontend crashes
+    return NextResponse.json({
+      reimbursements: [],
+      pagination: {
+        page: 1,
+        limit: 50,
+        total: 0,
+        pages: 0
+      },
+      error: 'Failed to fetch reimbursements'
+    })
   }
 }
 

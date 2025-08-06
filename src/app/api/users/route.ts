@@ -13,7 +13,15 @@ const createUserSchema = z.object({
 })
 
 export async function GET() {
+  const startTime = Date.now()
+  
   try {
+    // Check if database is available
+    if (!process.env.DATABASE_URL) {
+      console.warn('DATABASE_URL not available, returning empty users list')
+      return NextResponse.json({ users: [] })
+    }
+
     const session = await getServerSession(authOptions)
     
     // Only admins can view users
@@ -38,11 +46,17 @@ export async function GET() {
 
     return NextResponse.json({ users })
   } catch (error) {
-    console.error('Error fetching users:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch users' },
-      { status: 500 }
-    )
+    console.error('Error fetching users:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack?.substring(0, 500) : 'No stack',
+      elapsed: Date.now() - startTime
+    })
+    
+    // Return empty array structure to prevent frontend crashes
+    return NextResponse.json({
+      users: [],
+      error: 'Failed to fetch users'
+    })
   }
 }
 
